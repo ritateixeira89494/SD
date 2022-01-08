@@ -1,7 +1,5 @@
 package uni.sd.ln.ssutilizadores.utilizadores;
 
-import uni.sd.data.ssutilizadores.UtilizadorNormalDAO;
-
 public class UtilizadorNormal extends Utilizador {
     /**
      * Autoridade do utilizador. Isto indica que tarefas pode executar no programa.
