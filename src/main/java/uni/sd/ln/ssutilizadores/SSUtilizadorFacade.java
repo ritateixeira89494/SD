@@ -6,7 +6,8 @@ import java.util.Map;
 import uni.sd.ln.ssutilizadores.exceptions.CredenciaisErradasException;
 import uni.sd.ln.ssutilizadores.exceptions.PasswordInvalidaException;
 import uni.sd.ln.ssutilizadores.exceptions.UsernameInvalidoException;
-import uni.sd.ln.ssutilizadores.exceptions.UtilizadorExisteException;
+import uni.sd.data.ssutilizadores.exceptions.UtilizadorExisteException;
+import uni.sd.ln.ssutilizadores.utilizadores.Administrador;
 import uni.sd.ln.ssutilizadores.utilizadores.Utilizador;
 import uni.sd.ln.ssutilizadores.utilizadores.UtilizadorNormal;
 
@@ -24,9 +25,9 @@ public class SSUtilizadorFacade implements ISSUtilizador {
          *  para o caso me ter esquecido de remover isto antes de
          *  dar commit. 
          */
-        users.put("lol",new UtilizadorNormal("lol", "12345"));
-        users.put("abc",new UtilizadorNormal("abc", "69"));
-        users.put("teste",new UtilizadorNormal("teste", "420"));
+        users.put("lol",new UtilizadorNormal("lol@lol.com", "lol", "12345"));
+        users.put("abc",new UtilizadorNormal("abc@email.com", "abc", "69"));
+        users.put("teste",new UtilizadorNormal("teste@teste.com", "teste", "420"));
     }
 
     /**
@@ -64,7 +65,7 @@ public class SSUtilizadorFacade implements ISSUtilizador {
      * TODO: Substituir authority por uma implementação melhor 
      */
     @Override
-    public void registar(String username, String password, int authority)
+    public void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException {
         if(
             username.length() < Utilizador.USERNAME_LENGTH_MINIMO ||
@@ -82,10 +83,10 @@ public class SSUtilizadorFacade implements ISSUtilizador {
         Utilizador novoUser;
         switch(authority) {
             case 0 : 
-                novoUser = new UtilizadorNormal(username, password);
+                novoUser = new UtilizadorNormal(email, username, password);
                 break;
             case 1 :
-                novoUser = new UtilizadorNormal(username, password);
+                novoUser = new Administrador(email, username, password);
                 break;
             default :
                 System.err.println("WTF!! How did i get here lol");

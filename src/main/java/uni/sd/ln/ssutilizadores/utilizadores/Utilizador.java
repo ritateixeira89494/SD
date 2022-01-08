@@ -13,14 +13,19 @@ public abstract class Utilizador {
     public static final int PASSWORD_LENGTH_MINIMO = 5;
     public static final int PASSWORD_LENGTH_MAXIMO = 30;
 
+    private final String email;
     private String username;
     private String password;
-    
-    public Utilizador(String username, String password) {
+
+    public Utilizador(String email, String username, String password) {
+        this.email = email;
         this.username = username;
         this.password = password;
     }
 
+    public String getEmail() {
+        return this.email;
+    }
     public void setUsername(String username) {
         this.username = username;
     }
@@ -35,6 +40,4 @@ public abstract class Utilizador {
     }
 
     public abstract int getAuthority();
-
-    public abstract Class<?> getDAO(); 
 }

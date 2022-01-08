@@ -8,7 +8,7 @@ import uni.sd.ln.ssutilizadores.SSUtilizadorFacade;
 import uni.sd.ln.ssutilizadores.exceptions.CredenciaisErradasException;
 import uni.sd.ln.ssutilizadores.exceptions.PasswordInvalidaException;
 import uni.sd.ln.ssutilizadores.exceptions.UsernameInvalidoException;
-import uni.sd.ln.ssutilizadores.exceptions.UtilizadorExisteException;
+import uni.sd.data.ssutilizadores.exceptions.UtilizadorExisteException;
 
 import uni.sd.ln.ssvoos.ISSVoo;
 import uni.sd.ln.ssvoos.SSVooFacade;
@@ -34,9 +34,9 @@ public class LN implements Iln {
     }
 
     @Override
-    public void registar(String username, String password, int authority)
+    public void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException {
-        userFacade.registar(username, password, authority);
+        userFacade.registar(email, username, password, authority);
     }
 
     @Override

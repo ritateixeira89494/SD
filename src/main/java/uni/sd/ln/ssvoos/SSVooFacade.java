@@ -18,7 +18,7 @@ import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.ssvoos.voos.Voo;
 
 public class SSVooFacade implements ISSVoo {
-    private Map<String, Voo> voos;
+    private final Map<String, Voo> voos;
     private boolean diaAberto = true;
 
     public SSVooFacade() {
@@ -133,7 +133,7 @@ public class SSVooFacade implements ISSVoo {
     @Override
     public List<Voo> obterListaVoo() {
         return voos.values().stream()
-                            .map(v -> new Voo(v))
+                            .map(Voo::new)
                             .collect(Collectors.toList());
     }
 

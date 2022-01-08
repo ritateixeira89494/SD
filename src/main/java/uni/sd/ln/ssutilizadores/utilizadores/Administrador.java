@@ -11,17 +11,12 @@ public class Administrador extends Utilizador {
      */
     public static final int AUTHORITY = 1;
 
-    public Administrador(String username, String password) {
-        super(username, password);
+    public Administrador(String email, String username, String password) {
+        super(email, username, password);
     }
 
     @Override
     public int getAuthority() {
         return AUTHORITY;
-    }
-
-    @Override
-    public Class<?> getDAO() {
-        return AdministradorDAO.class;
     }
 }

@@ -1,4 +1,4 @@
-package uni.sd.ln.ssutilizadores.exceptions;
+package uni.sd.data.ssutilizadores.exceptions;
 
 public class UtilizadorExisteException extends Exception {
     public UtilizadorExisteException() {

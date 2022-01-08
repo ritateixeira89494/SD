@@ -9,17 +9,12 @@ public class UtilizadorNormal extends Utilizador {
      */
     public static final int AUTHORITY = 0;
 
-    public UtilizadorNormal(String username, String password) {
-        super(username, password);
+    public UtilizadorNormal(String email, String username, String password) {
+        super(email, username, password);
     }
 
     @Override
     public int getAuthority() {
         return AUTHORITY;
-    }
-
-    @Override
-    public Class<?> getDAO() {
-        return UtilizadorNormalDAO.class;
     }
 }
