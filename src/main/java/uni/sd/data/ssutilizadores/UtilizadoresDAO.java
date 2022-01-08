@@ -28,20 +28,23 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      */
     @Override
     public void saveUtilizador(Utilizador u) throws SQLException, UtilizadorExisteException {
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("select * from Utilizador where Email = '" + u.getEmail() + "'");
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Utilizador where Email = ?"
+        );
+        ps.setString(1, u.getEmail());
+        ResultSet rs = ps.executeQuery();
         if(rs.next()) {
-            System.out.println("Valor já existe!!");
             throw new UtilizadorExisteException();
         }
 
-        stmt.executeUpdate(
-                "insert into Utilizador(Email, Nome, Password, Tipo) value ("
-                        + "'" + u.getEmail() + "', "
-                        + "'" + u.getUsername() + "', "
-                        + "'" + u.getPassword() + "', "
-                        + "'" + u.getAuthority() + "')"
+        ps = conn.prepareStatement(
+                "insert into Utilizador(Email, Nome, Password, Tipo) value (?,?,?,?)"
         );
+        ps.setString(1, u.getEmail());
+        ps.setString(2, u.getUsername());
+        ps.setString(3, u.getPassword());
+        ps.setInt(4, u.getAuthority());
+        ps.executeUpdate();
 
         if(u instanceof UtilizadorNormal) {
             saveUtilizadorNormal((UtilizadorNormal) u);
@@ -58,8 +61,9 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      * @throws SQLException Caso haja algum problema com a base de dados
      */
     private void saveUtilizadorNormal(UtilizadorNormal u) throws SQLException {
-        Statement stmt = conn.createStatement();
-        stmt.executeUpdate("insert into UtilizadorNormal(idUtilizadorNormal) value (LAST_INSERT_ID())");
+        conn.createStatement().executeUpdate(
+                "insert into UtilizadorNormal(idUtilizadorNormal) value (LAST_INSERT_ID())"
+        );
     }
 
     /**
@@ -69,8 +73,9 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      * @throws SQLException Caso haja algum problema com a base de dados
      */
     private void saveAdministrador(Administrador admin) throws SQLException {
-        Statement stmt = conn.createStatement();
-        stmt.executeUpdate("insert into Administrador(idAdministrador) value (LAST_INSERT_ID())");
+        conn.createStatement().executeUpdate(
+                "insert into Administrador(idAdministrador) value (LAST_INSERT_ID())"
+        );
     }
 
     /**
@@ -83,10 +88,13 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      */
     @Override
     public Utilizador getUtilizador(String email) throws UtilizadorInexistenteException, SQLException {
-        Statement stmt = conn.createStatement();
         Utilizador u;
 
-        ResultSet rs = stmt.executeQuery("select * from Utilizador where Email = '" + email + "'");
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Utilizador where Email = ?"
+        );
+        ps.setString(1, email);
+        ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
             throw new UtilizadorInexistenteException();
         }
@@ -101,7 +109,6 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
                 u = new Administrador(email, nome, password);
                 break;
             default:
-                System.out.println("WTF?! Este tipo não existe!");
                 throw new UtilizadorInexistenteException();
         }
 
@@ -119,18 +126,67 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      */
     @Override
     public void updateUtilizador(Utilizador u) throws SQLException, UtilizadorInexistenteException {
-        Statement stmt = conn.createStatement();
-
-        ResultSet rs = stmt.executeQuery("select * from Utilizador where Email = '" + u.getEmail() + "'");
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Utilizador where Email = ?"
+        );
+        ps.setString(1, u.getEmail());
+        ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
             throw new UtilizadorInexistenteException();
         }
 
-        stmt.executeUpdate(
-                "update Utilizador set "
-                        + "Nome = '" + u.getUsername() + "', "
-                        + "Password = '" + u.getPassword() + "' "
-                        + "where Email = '" + u.getEmail() + "'"
+        ps = conn.prepareStatement(
+                "update Utilizador set Nome = ?, Password = ? where Email = ?"
+        );
+        ps.setString(1, u.getUsername());
+        ps.setString(2, u.getPassword());
+        ps.setString(3, u.getEmail());
+        ps.executeUpdate();
+    }
+
+    /**
+     * Remove um utilizador da base de dados.
+     *
+     * @param email Email associado ao utilizador
+     * @throws SQLException Caso haja algum problema com a base de dados
+     * @throws UtilizadorInexistenteException Caso nenhum utilizador esteja registado com
+     *                                        esse email
+     */
+    @Override
+    public void removeUtilizador(String email) throws SQLException, UtilizadorInexistenteException {
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Utilizador where Email = ?"
+        );
+        ps.setString(1, email);
+        ResultSet rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new UtilizadorInexistenteException();
+        }
+        int tipo = rs.getInt("Tipo");
+        int idUtilizador = rs.getInt("idUtilizador");
+
+        ps = conn.prepareStatement(
+                "delete from Utilizador where Email = ?"
+        );
+        ps.setString(1, email);
+        ps.executeUpdate();
+
+        switch (tipo) {
+            case UtilizadorNormal.AUTHORITY:
+                ps = conn.prepareStatement(
+                        "delete from UtilizadorNormal where idUtilizadorNormal = ?"
                 );
+                break;
+            case Administrador.AUTHORITY:
+                ps = conn.prepareStatement(
+                        "delete from Administrador where idAdministrador = ?"
+                );
+                break;
+            default:
+                System.out.println("WTF!! How did I get here!?");
+                throw new UtilizadorInexistenteException();
+        }
+        ps.setInt(1, idUtilizador);
+        ps.executeUpdate();
     }
 }

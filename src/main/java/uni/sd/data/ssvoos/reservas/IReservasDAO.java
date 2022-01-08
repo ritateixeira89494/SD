@@ -12,5 +12,5 @@ import java.time.LocalDate;
 public interface IReservasDAO {
     void saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException;
     Reserva getReserva(String email, String partida, String destino, LocalDate dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException;
-    void removeReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException;
+    void removeReserva(String email, String partida, String destino, LocalDate dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException;
 }

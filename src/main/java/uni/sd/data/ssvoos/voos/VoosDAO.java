@@ -27,23 +27,47 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public void saveVoo(Voo v) throws SQLException, VooExisteException {
-        Statement stmt = conn.createStatement();
-
-        ResultSet rs = stmt.executeQuery(
-                "select * from Voo where "
-                        + "Partida = '" + v.getPartida() + "' and "
-                        + "Destino = '" + v.getDestino() + "'"
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Voo where Partida = ? and Destino = ?"
         );
+        ps.setString(1, v.getPartida());
+        ps.setString(2, v.getDestino());
+        ResultSet rs = ps.executeQuery();
         if(rs.next()) {
             throw new VooExisteException();
         }
 
-        stmt.executeUpdate(
-                "insert into Voo(Partida, Destino, Capacidade) values ("
-                        + "'" + v.getPartida() + "', "
-                        + "'" + v.getDestino() + "', "
-                        + "'" + v.getCapacidade() + "')"
+        ps = conn.prepareStatement(
+                "insert into Voo(Partida, Destino, Capacidade) values (?,?,?)"
         );
+        ps.setString(1, v.getPartida());
+        ps.setString(2, v.getDestino());
+        ps.setInt(3, v.getCapacidade());
+        ps.executeUpdate();
+    }
+
+    /**
+     * Obtem o voo com o ponto de partida e o destino passados como argumento.
+     *
+     * @param partida Ponto de partida do voo
+     * @param destino Destino do Voo
+     * @return Voo com o ponto de partida e o destino passados como argumento
+     * @throws SQLException Caso haja um problema com a base de dados
+     * @throws VooInexistenteException Caso o voo não exista
+     */
+    @Override
+    public Voo getVoo(String partida, String destino) throws SQLException, VooInexistenteException {
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Voo where Partida = ? and Destino = ?"
+        );
+        ps.setString(1, partida);
+        ps.setString(2, destino);
+        ResultSet rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new VooInexistenteException();
+        }
+
+        return new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
     }
 
     /**
@@ -61,16 +85,15 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public Map<String, Voo> getVooPorPartida(String partida) throws SQLException, VooInexistenteException {
-        Statement stmt = conn.createStatement();
-
-        ResultSet rs = stmt.executeQuery(
-                "select * from Voo where "
-                        + "Partida = '" + partida + "'"
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Voo where Partida = ?"
         );
+        ps.setString(1, partida);
+        ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
             throw new VooInexistenteException();
         }
-        
+
         Map<String, Voo> voos = new HashMap<>();
 
         Voo v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
@@ -99,21 +122,19 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public Map<String, Voo> getVooPorDestino(String destino) throws SQLException, VooInexistenteException {
-        Statement stmt = conn.createStatement();
-        
-        ResultSet rs = stmt.executeQuery(
-                "select * from Voo where "
-                        + "Destino = '" + destino + "'"
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Voo where Destino = ?"
         );
+        ps.setString(1, destino);
+        ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
             throw new VooInexistenteException();
         }
-        
+
         Map<String, Voo> voos = new HashMap<>();
 
         Voo v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
         voos.put(v.getPartida(), v);
-
 
         while(rs.next()) {
             v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
@@ -133,23 +154,50 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public void updateVoo(Voo v) throws SQLException, VooInexistenteException  {
-        Statement stmt = conn.createStatement();
-        
-        ResultSet rs = stmt.executeQuery(
-                "select * from Voo where "
-                        + "Partida = '" + v.getPartida() + "' and "
-                        + "Destino = '" + v.getDestino() + "'"
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Voo where Partida = ? and Destino = ?"
         );
+        ps.setString(1, v.getPartida());
+        ps.setString(2, v.getDestino());
+        ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
             throw new VooInexistenteException();
         }
 
-        stmt.executeUpdate(
-                "update Voo set "
-                        + "Capacidade = '" + v.getCapacidade() + "'"
-                        + "where "
-                            + "Partida = '" + v.getPartida() + "' and "
-                            + "Destino = '" + v.getDestino() + "'"
+        ps = conn.prepareStatement(
+                "update Voo set Capacidade = ? where Partida = ? and Destino = ?"
         );
+        ps.setInt(1, v.getCapacidade());
+        ps.setString(2, v.getPartida());
+        ps.setString(3, v.getDestino());
+        ps.executeUpdate();
+    }
+
+    /**
+     * Remove um voo da base de dados.
+     *
+     * @param partida Ponto de partida do voo a remover
+     * @param destino Destino do voo a remover
+     * @throws SQLException Caso haja um problema com a base de dados
+     * @throws VooInexistenteException Caso o voo não exista
+     */
+    @Override
+    public void removeVoo(String partida, String destino) throws SQLException, VooInexistenteException {
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Voo where Partida = ? and Destino = ?"
+        );
+        ps.setString(1, partida);
+        ps.setString(2, destino);
+        ResultSet rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new VooInexistenteException();
+        }
+
+        ps = conn.prepareStatement(
+                "delete from Voo where Partida = ? and Destino = ?"
+        );
+        ps.setString(1, partida);
+        ps.setString(2, destino);
+        ps.executeUpdate();
     }
 }

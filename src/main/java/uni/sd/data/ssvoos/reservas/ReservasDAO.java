@@ -85,29 +85,33 @@ public class ReservasDAO implements IReservasDAO {
 
     /**
      * Remove uma reserva da base de dados, caso esta exista, claro.
-     * @param r Reserva a remover
+     * @param email Email associado à reserva
+     * @param partida Partida do voo reservado
+     * @param destino Destino do voo reservado
+     * @param dataVoo Data do voo reservado
+     *
      * @throws SQLException Caso haja algum problema com a base de dados
      * @throws UtilizadorInexistenteException Caso o utilizador da reserva não exista
      * @throws VooInexistenteException Caso o voo reservado não exista
      * @throws ReservaInexistenteException Caso a reserva não exista
      */
     @Override
-    public void removeReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
-        int idUtilizador = getUtilizadorID(r.getEmailUtilizador());
-        int idVoo = getVooID(r.getPartida(), r.getDestino());
-        java.sql.Date dataVoo = Date.valueOf(r.getDataVoo());
+    public void removeReserva(String email, String partida, String destino, LocalDate dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
+        int idUtilizador = getUtilizadorID(email);
+        int idVoo = getVooID(partida, destino);
+        java.sql.Date dataVooDate = Date.valueOf(dataVoo);
 
         // Aqui usamos a função getDataReserva só para 
         // verificar se a reserva existe. Nós não precisamos
         // do return para nada neste caso.
-        getDataReserva(idUtilizador, idVoo, dataVoo);
+        getDataReserva(idUtilizador, idVoo, dataVooDate);
 
         PreparedStatement ps = conn.prepareStatement(
                 "delete from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
         );
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setDate(3, dataVoo);
+        ps.setDate(3, dataVooDate);
         ps.executeUpdate();
     }
 
