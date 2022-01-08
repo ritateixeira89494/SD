@@ -11,7 +11,7 @@ import java.sql.*;
 
 
 public class UtilizadoresDAO implements IUtilizadoresDAO{
-    Connection conn;
+    private Connection conn;
 
     public UtilizadoresDAO() throws SQLException {
         conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "root", "rootPass12345");
