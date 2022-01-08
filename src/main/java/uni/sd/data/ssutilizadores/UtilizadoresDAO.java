@@ -1,8 +1,8 @@
 package uni.sd.data.ssutilizadores;
 
 
-import uni.sd.data.ssutilizadores.exceptions.UtilizadorNaoExisteException;
-import uni.sd.data.ssutilizadores.exceptions.UtilizadorExisteException;
+import uni.sd.ln.ssutilizadores.exceptions.UtilizadorInexistenteException;
+import uni.sd.ln.ssutilizadores.exceptions.UtilizadorExisteException;
 import uni.sd.ln.ssutilizadores.utilizadores.Administrador;
 import uni.sd.ln.ssutilizadores.utilizadores.Utilizador;
 import uni.sd.ln.ssutilizadores.utilizadores.UtilizadorNormal;
@@ -78,17 +78,17 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      *
      * @param email Email do utilizador a obter
      * @return Utilizador com o email passado como argumento
-     * @throws UtilizadorNaoExisteException Caso um utilizador com o email dado não exista na base de dados
+     * @throws UtilizadorInexistenteException Caso um utilizador com o email dado não exista na base de dados
      * @throws SQLException Caso haja algum problema com a base de dados
      */
     @Override
-    public Utilizador getUtilizador(String email) throws UtilizadorNaoExisteException, SQLException {
+    public Utilizador getUtilizador(String email) throws UtilizadorInexistenteException, SQLException {
         Statement stmt = conn.createStatement();
         Utilizador u;
 
         ResultSet rs = stmt.executeQuery("select * from Utilizador where Email = '" + email + "'");
         if(!rs.next()) {
-            throw new UtilizadorNaoExisteException();
+            throw new UtilizadorInexistenteException();
         }
 
         String nome = rs.getString("Nome");
@@ -102,7 +102,7 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
                 break;
             default:
                 System.out.println("WTF?! Este tipo não existe!");
-                throw new UtilizadorNaoExisteException();
+                throw new UtilizadorInexistenteException();
         }
 
         return u;
@@ -114,16 +114,16 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      *
      * @param u Utilizador com a informação atualizada
      * @throws SQLException Caso haja algum problema com a base de dados
-     * @throws UtilizadorNaoExisteException Caso um utilizador com o email do utilizador
+     * @throws UtilizadorInexistenteException Caso um utilizador com o email do utilizador
      *                                      passado como argumento não esteja registado na base de dados
      */
     @Override
-    public void updateUtilizador(Utilizador u) throws SQLException, UtilizadorNaoExisteException {
+    public void updateUtilizador(Utilizador u) throws SQLException, UtilizadorInexistenteException {
         Statement stmt = conn.createStatement();
 
         ResultSet rs = stmt.executeQuery("select * from Utilizador where Email = '" + u.getEmail() + "'");
         if(!rs.next()) {
-            throw new UtilizadorNaoExisteException();
+            throw new UtilizadorInexistenteException();
         }
 
         stmt.executeUpdate(
@@ -133,5 +133,4 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
                         + "where Email = '" + u.getEmail() + "'"
                 );
     }
-
 }

@@ -8,7 +8,7 @@ import uni.sd.ln.ssutilizadores.SSUtilizadorFacade;
 import uni.sd.ln.ssutilizadores.exceptions.CredenciaisErradasException;
 import uni.sd.ln.ssutilizadores.exceptions.PasswordInvalidaException;
 import uni.sd.ln.ssutilizadores.exceptions.UsernameInvalidoException;
-import uni.sd.data.ssutilizadores.exceptions.UtilizadorExisteException;
+import uni.sd.ln.ssutilizadores.exceptions.UtilizadorExisteException;
 
 import uni.sd.ln.ssvoos.ISSVoo;
 import uni.sd.ln.ssvoos.SSVooFacade;

@@ -6,7 +6,7 @@ import java.util.Map;
 import uni.sd.ln.ssutilizadores.exceptions.CredenciaisErradasException;
 import uni.sd.ln.ssutilizadores.exceptions.PasswordInvalidaException;
 import uni.sd.ln.ssutilizadores.exceptions.UsernameInvalidoException;
-import uni.sd.data.ssutilizadores.exceptions.UtilizadorExisteException;
+import uni.sd.ln.ssutilizadores.exceptions.UtilizadorExisteException;
 import uni.sd.ln.ssutilizadores.utilizadores.Administrador;
 import uni.sd.ln.ssutilizadores.utilizadores.Utilizador;
 import uni.sd.ln.ssutilizadores.utilizadores.UtilizadorNormal;
