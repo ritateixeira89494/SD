@@ -17,6 +17,8 @@ import uni.sd.ln.ssvoos.exceptions.VooExisteException;
 import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.ssvoos.voos.Voo;
 
+import static java.lang.Integer.parseInt;
+
 public class SSVooFacade implements ISSVoo {
     private final Map<String, Voo> voos;
     private boolean diaAberto = true;
@@ -36,24 +38,36 @@ public class SSVooFacade implements ISSVoo {
     /**
      * Reserva um voo de acordo com um id e uma data.
      * 
-     * @param id ID do voo
+     * @param idVoo ID do voo
      * @param data Data do voo a reservar
      */
     @Override
-    public void reservarVoo(String id, LocalDateTime data) throws VooInexistenteException {
+    public void reservarVoo(Voo idVoo, LocalDateTime data) throws VooInexistenteException {
         // TODO Implementar este método
+        // TODO Eu aqui estou a atualizar o setCapacidade mas não o updateVoo do VoosDAO, o que eu acho que está mal
+        // TODO O lugar que vai calhar à pessoa que fez a reserva será atribuído de baixo para cima
+        // Isto aqui não pode estar bem proque não estou a ter a hora em conta...
+        String idReserva = idVoo.getPartida() + "." + idVoo.getDestino() + "." + idVoo.getCapacidade();
+        int newCapacidade = idVoo.getCapacidade()-1;
+        idVoo.setCapacidade(newCapacidade);
         
     }
 
     /**
      * Cancela um voo já reservado.
      * 
-     * @param id ID da reserva
+     * @param idReserva ID da reserva
      */
     @Override
-    public void cancelarVoo(String id) throws ReservaInexistenteException {
+    public void cancelarVoo(String idReserva) throws ReservaInexistenteException {
         // TODO Implementar este método
-        
+        // TODO Não sei como chamar as funções da base de dados VoosDAO
+        String[] s = idReserva.split("\\.", 3);
+        String partida = s[0];
+        String chegada = s[1];
+        int capacidade = parseInt(s[2]);
+
+        //Agora aqui é só pôr a função de cancelar voo
     }
 
     /**
@@ -122,6 +136,10 @@ public class SSVooFacade implements ISSVoo {
     public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
             throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException {
         // TODO Implementar este método
+        for(int i = 0; i < voos.size(); i++){
+            //Aqui dentro tenho que encontrar o voo que se quer
+            //O problema são os voos intermédios porque não tenho data de início ou chegada...
+        }
         
     }
 

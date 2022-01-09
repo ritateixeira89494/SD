@@ -15,8 +15,8 @@ import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.ssvoos.voos.Voo;
 
 public interface ISSVoo {
-    public void reservarVoo(String id, LocalDateTime data) throws VooInexistenteException;
-    public void cancelarVoo(String id) throws ReservaInexistenteException;
+    public void reservarVoo(Voo idVoo, LocalDateTime data) throws VooInexistenteException;
+    public void cancelarVoo(String idReserva) throws ReservaInexistenteException;
     public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException;
     public void encerrarDia() throws DiaJaEncerradoException;
     public void abrirDia() throws DiaJaAbertoException;

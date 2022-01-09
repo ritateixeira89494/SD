@@ -40,8 +40,8 @@ public class LN implements Iln {
     }
 
     @Override
-    public void reservarVoo(String id, LocalDateTime data) throws VooInexistenteException {
-        vooFacade.reservarVoo(id, data);
+    public void reservarVoo(Voo idVoo, LocalDateTime data) throws VooInexistenteException {
+        vooFacade.reservarVoo(idVoo, data);
     }
 
     @Override

@@ -24,7 +24,7 @@ public interface Iln {
     void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException;
 
-    public void reservarVoo(String id, LocalDateTime data) throws VooInexistenteException;
+    public void reservarVoo(Voo idVoo, LocalDateTime data) throws VooInexistenteException;
     public void cancelarVoo(String id) throws ReservaInexistenteException;
     public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException;
     public void encerrarDia() throws DiaJaEncerradoException;
