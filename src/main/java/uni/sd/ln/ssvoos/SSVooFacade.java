@@ -1,56 +1,48 @@
 package uni.sd.ln.ssvoos;
 
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import uni.sd.ln.ssvoos.exceptions.CapacidadeInvalidaException;
-import uni.sd.ln.ssvoos.exceptions.DataInvalidaException;
-import uni.sd.ln.ssvoos.exceptions.DiaJaAbertoException;
-import uni.sd.ln.ssvoos.exceptions.DiaJaEncerradoException;
-import uni.sd.ln.ssvoos.exceptions.PartidaDestinoIguaisException;
-import uni.sd.ln.ssvoos.exceptions.ReservaInexistenteException;
-import uni.sd.ln.ssvoos.exceptions.SemReservaDisponivelException;
-import uni.sd.ln.ssvoos.exceptions.VooExisteException;
-import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.data.ssvoos.reservas.ReservasDAO;
+import uni.sd.ln.ssutilizadores.exceptions.UtilizadorInexistenteException;
+import uni.sd.ln.ssvoos.exceptions.*;
+import uni.sd.ln.ssvoos.reservas.Reserva;
 import uni.sd.ln.ssvoos.voos.Voo;
+import uni.sd.data.ssvoos.voos.VoosDAO;
+
 
 import static java.lang.Integer.parseInt;
 
 public class SSVooFacade implements ISSVoo {
-    private final Map<String, Voo> voos;
+    private VoosDAO vDAO;
+    private ReservasDAO reservasDAO;
     private boolean diaAberto = true;
+    private String email;
 
-    public SSVooFacade() {
-        voos = new HashMap<>();
-        /**
-         *  Adicionei isto para testes. Este comentário serve
-         *  para o caso me ter esquecido de remover isto antes de
-         *  dar commit. 
-         */
-        voos.put("t", new Voo("Braga", "Madrid", 150));
-        voos.put("haha", new Voo("Braga", "Munique", 200));
-        voos.put("o", new Voo("Nova Iorque", "Lisboa", 20));
+    public SSVooFacade(String email) throws SQLException {
+        vDAO = new VoosDAO();
+        reservasDAO = new ReservasDAO();
+        this.email = email;
     }
 
     /**
      * Reserva um voo de acordo com um id e uma data.
      * 
-     * @param idVoo ID do voo
+     * @param partida origem do voo
+     * @param destino destino do voo
      * @param data Data do voo a reservar
      */
     @Override
-    public void reservarVoo(Voo idVoo, LocalDateTime data) throws VooInexistenteException {
-        // TODO Implementar este método
-        // TODO Eu aqui estou a atualizar o setCapacidade mas não o updateVoo do VoosDAO, o que eu acho que está mal
-        // TODO O lugar que vai calhar à pessoa que fez a reserva será atribuído de baixo para cima
-        // Isto aqui não pode estar bem proque não estou a ter a hora em conta...
-        String idReserva = idVoo.getPartida() + "." + idVoo.getDestino() + "." + idVoo.getCapacidade();
-        int newCapacidade = idVoo.getCapacidade()-1;
-        idVoo.setCapacidade(newCapacidade);
-        
+    public void reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException,
+            SQLException, UtilizadorInexistenteException, ReservaExisteException {
+        Voo v = vDAO.getVoo(partida, destino);
+        Reserva r = new Reserva(email, partida, destino, data, LocalDate.now());
+        reservasDAO.saveReserva(r);
     }
 
     /**
@@ -59,15 +51,15 @@ public class SSVooFacade implements ISSVoo {
      * @param idReserva ID da reserva
      */
     @Override
-    public void cancelarVoo(String idReserva) throws ReservaInexistenteException {
-        // TODO Implementar este método
-        // TODO Não sei como chamar as funções da base de dados VoosDAO
-        String[] s = idReserva.split("\\.", 3);
-        String partida = s[0];
-        String chegada = s[1];
-        int capacidade = parseInt(s[2]);
+    public void cancelarVoo(int idReserva) throws ReservaInexistenteException, VooInexistenteException, SQLException, UtilizadorInexistenteException {
+        Reserva r = reservasDAO.getReservaPorID(idReserva);
 
-        //Agora aqui é só pôr a função de cancelar voo
+        String email = r.getEmailUtilizador();
+        String partida = r.getPartida();
+        String destino = r.getDestino();
+        LocalDate data = r.getDataReserva();
+
+        reservasDAO.removeReserva(email, partida, destino, data);
     }
 
     /**
@@ -137,8 +129,7 @@ public class SSVooFacade implements ISSVoo {
             throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException {
         // TODO Implementar este método
         for(int i = 0; i < voos.size(); i++){
-            //Aqui dentro tenho que encontrar o voo que se quer
-            //O problema são os voos intermédios porque não tenho data de início ou chegada...
+
         }
         
     }
