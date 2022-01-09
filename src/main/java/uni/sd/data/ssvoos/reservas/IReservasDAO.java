@@ -8,9 +8,15 @@ import uni.sd.ln.ssvoos.reservas.Reserva;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Map;
 
 public interface IReservasDAO {
     void saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException;
     Reserva getReserva(String email, String partida, String destino, LocalDate dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException;
+
+    Reserva getReservaPorID(int id) throws SQLException, ReservaInexistenteException, UtilizadorInexistenteException, VooInexistenteException;
+
+    Map<Integer, Reserva> getTodasReservasUtilizador(String email) throws SQLException, UtilizadorInexistenteException, VooInexistenteException;
+
     void removeReserva(String email, String partida, String destino, LocalDate dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException;
 }
