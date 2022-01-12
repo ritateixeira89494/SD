@@ -2,8 +2,8 @@ package uni.sd.data;
 
 import java.util.Map;
 
-import uni.sd.ln.ssutilizadores.utilizadores.Utilizador;
-import uni.sd.ln.ssvoos.voos.Voo;
+import uni.sd.ln.server.ssutilizadores.utilizadores.Utilizador;
+import uni.sd.ln.server.ssvoos.voos.Voo;
 
 public interface IDados {
     public void saveUtilizadores(Map<String,Utilizador> us);

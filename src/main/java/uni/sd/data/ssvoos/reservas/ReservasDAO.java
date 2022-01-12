@@ -1,13 +1,15 @@
 package uni.sd.data.ssvoos.reservas;
 
-import uni.sd.ln.ssutilizadores.exceptions.UtilizadorInexistenteException;
-import uni.sd.ln.ssvoos.exceptions.ReservaExisteException;
-import uni.sd.ln.ssvoos.exceptions.ReservaInexistenteException;
-import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
-import uni.sd.ln.ssvoos.reservas.Reserva;
+import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.ReservaExisteException;
+import uni.sd.ln.server.ssvoos.exceptions.ReservaInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.ln.server.ssvoos.reservas.Reserva;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReservasDAO implements IReservasDAO {
     Connection conn;
@@ -81,6 +83,128 @@ public class ReservasDAO implements IReservasDAO {
         // esteja mal. Por causa disso, não precisamos de os ir buscar a base de dados e podemos utilizar os
         // parâmetros passados.
         return new Reserva(email, partida, destino, dataVoo, dataReserva.toLocalDate());
+    }
+
+    /**
+     * Obtem uma reserva através do seu ID
+     *
+     * @param id ID da encomenda a procurar
+     * @return Reserva com o ID passado como argumento
+     * @throws SQLException Caso haja algum problema com a base de dados
+     * @throws ReservaInexistenteException Caso uma reserva com aquele ID não exista
+     * @throws UtilizadorInexistenteException Caso o Utilizador da reserva não exista.
+     * @throws VooInexistenteException Caso o Voo da reserva não exista.
+     */
+    @Override
+    public Reserva getReservaPorID(int id) throws SQLException, ReservaInexistenteException, UtilizadorInexistenteException, VooInexistenteException {
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Reserva where idReserva = ?"
+        );
+        ps.setInt(1, id);
+        ResultSet rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new ReservaInexistenteException();
+        }
+        int idUtilizador = rs.getInt("idUtilizador");
+        int idVoo = rs.getInt("idReserva");
+        LocalDate dataVoo = rs.getDate("Data_Voo").toLocalDate();
+        LocalDate dataReserva = rs.getDate("Data_Reserva").toLocalDate();
+
+        ps = conn.prepareStatement(
+                "select Email from Utilizador where idUtilizador = ?"
+        );
+        ps.setInt(1, idUtilizador);
+        rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new UtilizadorInexistenteException();
+        }
+        String email = rs.getString("Email");
+
+        ps = conn.prepareStatement(
+                "select Partida, Destino from Voo where idVoo = ?"
+        );
+        ps.setInt(1, idVoo);
+        rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new VooInexistenteException();
+        }
+        String partida = rs.getString("Partida");
+        String destino = rs.getString("Destino");
+
+        return new Reserva(email, partida, destino, dataVoo, dataReserva);
+    }
+
+    /**
+     * Obtém o ID de uma reserva.
+     *
+     * @param email Email do utilizador que fez a reserva
+     * @param partida Partida do voo
+     * @param destino Destino do voo
+     * @param data Data do voo
+     * @return ID da reserva
+     * @throws SQLException Caso haja algum problema com a base de dados
+     * @throws UtilizadorInexistenteException Caso o utilizador não exista
+     * @throws VooInexistenteException Caso o voo não exista
+     * @throws ReservaInexistenteException Caso a reserva não exista
+     */
+    @Override
+    public int getIDReserva(String email, String partida, String destino, LocalDate data) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
+        int idUtilizador = getUtilizadorID(email);
+        int idVoo = getVooID(partida, destino);
+
+        PreparedStatement ps = conn.prepareStatement(
+                "select idReserva from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
+        );
+        ps.setInt(1, idUtilizador);
+        ps.setInt(2, idVoo);
+        ps.setDate(3, java.sql.Date.valueOf(data));
+        ResultSet rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new ReservaInexistenteException();
+        }
+
+        return rs.getInt("idReserva");
+    }
+
+    /**
+     * Obtem todas as reservas feitas por um utilizador.
+     *
+     * @param email Email do utilizador a procurar
+     * @return Map com todas as reservas desse utilizador.
+     *         Nota: A chave do Map é o id da reserva e o valor a própria reserva
+     * @throws SQLException Caso haja algum problema com a base de dados
+     * @throws UtilizadorInexistenteException Caso o utilizador não exista
+     * @throws VooInexistenteException Caso o voo de alguma reserva não exista
+     */
+    @Override
+    public Map<Integer, Reserva> getTodasReservasUtilizador(String email) throws SQLException, UtilizadorInexistenteException, VooInexistenteException {
+        Map<Integer, Reserva> reservas = new HashMap<>();
+
+        int idUtilizador = getUtilizadorID(email);
+        PreparedStatement ps = conn.prepareStatement(
+                "select * from Reserva where idUtilizador = ?"
+        );
+        ps.setInt(1, idUtilizador);
+        ResultSet rs = ps.executeQuery();
+
+        while(rs.next()) {
+            LocalDate dataVoo = rs.getDate("Data_Voo").toLocalDate();
+            LocalDate dataReserva = rs.getDate("Data_Reserva").toLocalDate();
+
+            int idVoo = rs.getInt("idVoo");
+            ps = conn.prepareStatement("select Partida, Destino from Voo where idVoo = ?");
+            ps.setInt(1, idVoo);
+            ResultSet rs2 = ps.executeQuery();
+            if(!rs2.next()) {
+                throw new VooInexistenteException();
+            }
+            String partida = rs2.getString("Partida");
+            String destino = rs2.getString("Destino");
+
+            reservas.put(rs.getInt("idReserva"), new Reserva(email, partida, destino, dataVoo, dataReserva));
+        }
+
+        return reservas;
     }
 
     /**

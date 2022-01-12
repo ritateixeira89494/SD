@@ -6,8 +6,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import uni.sd.ln.Iln;
-import uni.sd.ln.ssutilizadores.exceptions.CredenciaisErradasException;
+import uni.sd.ln.server.Iln;
+import uni.sd.ln.server.ssutilizadores.exceptions.CredenciaisErradasException;
 
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -42,7 +42,7 @@ public class Login extends JFrame {
 
                 try {
                     // Se utilizador existir criar o menú principal e destruir esta janela
-                    if(ln.autenticar(username, password)) {
+                    if(ln.autenticar(username, password) != -1) {
                         new MenuPrincipal(ln);
                         dispose();
                     }

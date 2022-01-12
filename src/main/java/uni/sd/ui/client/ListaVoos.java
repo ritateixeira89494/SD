@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 
 import java.awt.FlowLayout;
 
-import uni.sd.ln.ssvoos.voos.Voo;
+import uni.sd.ln.server.ssvoos.voos.Voo;
 
 /**
  *  Esta classe cria uma janela para mostrar os voos.

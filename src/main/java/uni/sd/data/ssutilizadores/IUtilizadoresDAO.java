@@ -1,8 +1,8 @@
 package uni.sd.data.ssutilizadores;
 
-import uni.sd.ln.ssutilizadores.exceptions.UtilizadorExisteException;
-import uni.sd.ln.ssutilizadores.exceptions.UtilizadorInexistenteException;
-import uni.sd.ln.ssutilizadores.utilizadores.Utilizador;
+import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorExisteException;
+import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
+import uni.sd.ln.server.ssutilizadores.utilizadores.Utilizador;
 
 import java.sql.SQLException;
 

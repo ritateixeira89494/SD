@@ -4,24 +4,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TaggedConnection implements AutoCloseable {
-    private DataInputStream dis;
-    private DataOutputStream dos;
-    private Lock wLock = new ReentrantLock();
-    private Lock rLock = new ReentrantLock();
+    private final DataInputStream dis;
+    private final DataOutputStream dos;
+    private final Lock wLock = new ReentrantLock();
+    private final Lock rLock = new ReentrantLock();
 
-    public static class Frame {
-        public int tag;
-        public final byte[] data;
-        public Frame(int tag,byte[] data) {
-            this.tag = tag;
-            this.data = data;
-        }
-    }
-    
+
     public TaggedConnection(Socket socket) throws IOException {
         dis = new DataInputStream(socket.getInputStream());
         dos = new DataOutputStream(socket.getOutputStream());
@@ -30,23 +24,38 @@ public class TaggedConnection implements AutoCloseable {
     public void send(Frame f) throws IOException {
         wLock.lock();
         try {
-            dos.writeInt(f.tag);
-            dos.writeInt(f.data.length);
-            dos.write(f.data);
+            dos.writeInt(f.getTag());
+            dos.writeInt(f.getTipo());
+            dos.writeInt(f.getDados().size());
+            for(byte[] array: f.getDados()) {
+                dos.writeInt(array.length);
+                dos.write(array);
+            }
             dos.flush();
         } finally {
             wLock.unlock();
         }
     }
 
+    public void send(int tag, int tipo, List<byte[]> dados) throws IOException {
+        send(new Frame(tag, tipo, dados));
+    }
+
     public Frame receive() throws IOException {
         rLock.lock();
         try {
             int tag = dis.readInt();
-            int length = dis.readInt();
-            byte[] data = new byte[length];
-            dis.readFully(data);
-            return new Frame(tag, data);
+            int tipo = dis.readInt();
+            int dadosSize = dis.readInt();
+
+            List<byte[]> dados = new ArrayList<>();
+            for(int i = 0; i < dadosSize; i++) {
+                int arraySize = dis.readInt();
+                byte[] array = new byte[arraySize];
+                dis.readFully(array);
+                dados.add(array);
+            }
+            return new Frame(tag, tipo, dados);
         } finally {
             rLock.unlock();
         }

@@ -1,8 +1,8 @@
 package uni.sd.data.ssvoos.voos;
 
-import uni.sd.ln.ssvoos.exceptions.VooExisteException;
-import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
-import uni.sd.ln.ssvoos.voos.Voo;
+import uni.sd.ln.server.ssvoos.exceptions.VooExisteException;
+import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.ln.server.ssvoos.voos.Voo;
 
 import java.sql.SQLException;
 import java.util.Map;

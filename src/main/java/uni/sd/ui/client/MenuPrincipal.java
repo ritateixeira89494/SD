@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 
 import java.awt.FlowLayout;
 
-import uni.sd.ln.Iln;
+import uni.sd.ln.server.Iln;
 
 /**
  *  Menu principal do utilizador normal. Aqui estão todas os métodos
