@@ -46,7 +46,7 @@ public class LN implements Iln {
     }
 
     @Override
-    public void cancelarVoo(String id) throws ReservaInexistenteException {
+    public void cancelarVoo(int id) throws ReservaInexistenteException {
         vooFacade.cancelarVoo(id);
     }
 
@@ -67,7 +67,7 @@ public class LN implements Iln {
     }
 
     @Override
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
+    public void reservarVooPorPercurso(List<String> voos, LocalDate dataInicio, LocalDate dataFim)
             throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException {
         vooFacade.reservarVooPorPercurso(voos, dataInicio, dataFim);
     }

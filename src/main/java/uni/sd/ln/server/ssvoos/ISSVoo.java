@@ -17,11 +17,11 @@ import uni.sd.ln.server.ssvoos.voos.Voo;
 
 public interface ISSVoo {
     public int reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException;
-    public void cancelarVoo(String id) throws ReservaInexistenteException;
+    public void cancelarVoo(int id) throws ReservaInexistenteException;
     public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException;
     public void encerrarDia() throws DiaJaEncerradoException;
     public void abrirDia() throws DiaJaAbertoException;
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException;
+    public void reservarVooPorPercurso(List<String> voos, LocalDate dataInicio, LocalDate dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException;
     public List<Voo> obterListaVoo();
     public List<Voo> obterPercursosPossiveis(String partida, String destino);
 }

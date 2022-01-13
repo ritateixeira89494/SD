@@ -3,25 +3,19 @@ package uni.sd.net;
 import java.util.List;
 
 public class Frame {
-        private final int tag;
-        private final int tipo;
-        private final List<byte[]> dados;
+        private final String tipo;
+        private final List<String> dados;
 
-        public Frame(int tag, int tipo, List<byte[]> dados) {
-            this.tag = tag;
+        public Frame(String tipo, List<String> dados) {
             this.tipo = tipo;
             this.dados = dados;
     }
 
-    public int getTag() {
-        return this.tag;
-    }
-
-    public int getTipo() {
+    public String getTipo() {
             return this.tipo;
     }
 
-    public List<byte[]> getDados() {
+    public List<String> getDados() {
         return this.dados;
     }
 }

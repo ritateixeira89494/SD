@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -24,10 +25,12 @@ public class TaggedConnection implements AutoCloseable {
     public void send(Frame f) throws IOException {
         wLock.lock();
         try {
-            dos.writeInt(f.getTag());
-            dos.writeInt(f.getTipo());
+            byte[] tipoArr = f.getTipo().getBytes(StandardCharsets.UTF_8);
+            dos.writeInt(tipoArr.length);
+            dos.write(tipoArr);
             dos.writeInt(f.getDados().size());
-            for(byte[] array: f.getDados()) {
+            for(String s: f.getDados()) {
+                byte[] array = s.getBytes(StandardCharsets.UTF_8);
                 dos.writeInt(array.length);
                 dos.write(array);
             }
@@ -37,25 +40,27 @@ public class TaggedConnection implements AutoCloseable {
         }
     }
 
-    public void send(int tag, int tipo, List<byte[]> dados) throws IOException {
-        send(new Frame(tag, tipo, dados));
+    public void send(String tipo, List<String> dados) throws IOException {
+        send(new Frame(tipo, dados));
     }
 
     public Frame receive() throws IOException {
         rLock.lock();
         try {
-            int tag = dis.readInt();
-            int tipo = dis.readInt();
-            int dadosSize = dis.readInt();
+            int tipoSize = dis.readInt();
+            byte[] tipoArr = new byte[tipoSize];
+            dis.readFully(tipoArr);
+            String tipo = new String(tipoArr);
 
-            List<byte[]> dados = new ArrayList<>();
+            int dadosSize = dis.readInt();
+            List<String> dados = new ArrayList<>();
             for(int i = 0; i < dadosSize; i++) {
                 int arraySize = dis.readInt();
                 byte[] array = new byte[arraySize];
                 dis.readFully(array);
-                dados.add(array);
+                dados.add(new String(array));
             }
-            return new Frame(tag, tipo, dados);
+            return new Frame(tipo, dados);
         } finally {
             rLock.unlock();
         }

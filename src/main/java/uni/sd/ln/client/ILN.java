@@ -13,16 +13,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ILN {
-    public int autenticar(String username, String password) throws CredenciaisErradasException, IOException;
+    int autenticar(String username, String password) throws CredenciaisErradasException, IOException;
     void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException;
 
-    public int reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException, IOException;
-    public void cancelarVoo(String id) throws ReservaInexistenteException;
-    public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException;
-    public void encerrarDia() throws DiaJaEncerradoException;
-    public void abrirDia() throws DiaJaAbertoException;
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException;
-    public List<Voo> obterListaVoo();
-    public List<Voo> obterPercursosPossiveis(String partida, String destino);
+    int reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException, IOException;
+    void cancelarVoo(int id) throws ReservaInexistenteException, IOException;
+    void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException;
+    void encerrarDia() throws DiaJaEncerradoException, IOException;
+    void abrirDia() throws DiaJaAbertoException, IOException;
+    void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException;
+    List<Voo> obterListaVoo() throws IOException;
+    List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException;
 }

@@ -53,7 +53,7 @@ public class SSVooFacade implements ISSVoo {
      * @param id ID da reserva
      */
     @Override
-    public void cancelarVoo(String id) throws ReservaInexistenteException {
+    public void cancelarVoo(int id) throws ReservaInexistenteException {
         // TODO Implementar este método
         
     }
@@ -121,7 +121,7 @@ public class SSVooFacade implements ISSVoo {
      * @param dataFim Limite superior da data de reserva
      */
     @Override
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
+    public void reservarVooPorPercurso(List<String> voos, LocalDate dataInicio, LocalDate dataFim)
             throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException {
         // TODO Implementar este método
         

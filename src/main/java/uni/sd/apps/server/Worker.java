@@ -5,25 +5,23 @@ import uni.sd.ln.server.ssutilizadores.exceptions.CredenciaisErradasException;
 import uni.sd.ln.server.ssutilizadores.exceptions.PasswordInvalidaException;
 import uni.sd.ln.server.ssutilizadores.exceptions.UsernameInvalidoException;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorExisteException;
-import uni.sd.ln.server.ssvoos.exceptions.CapacidadeInvalidaException;
-import uni.sd.ln.server.ssvoos.exceptions.PartidaDestinoIguaisException;
-import uni.sd.ln.server.ssvoos.exceptions.VooExisteException;
-import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.*;
+import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.net.Frame;
 import uni.sd.net.TaggedConnection;
+import uni.sd.net.TipoMensagem;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Worker implements Runnable {
-    TaggedConnection tc;
-    boolean on = true;
-    Iln ln;
-    String email;
+
+    private final TaggedConnection tc;
+    private Iln ln;
+    private String email;
 
     public Worker(TaggedConnection tc, Iln ln) {
         this.tc = tc;
@@ -33,15 +31,37 @@ public class Worker implements Runnable {
     @Override
     public void run() {
         try {
+            boolean on = true;
             while(on) {
                 Frame f = tc.receive();
-                int tipo = f.getTipo();
+                String tipo = f.getTipo();
                 switch (tipo) {
-                    case 0:
+                    case TipoMensagem.AUTH:
                         autenticar(f.getDados());
                         break;
-                    case 1:
+                    case TipoMensagem.REG:
                         registar(f.getDados());
+                        break;
+                    case TipoMensagem.RESVOO:
+                        reservarVoo(f.getDados());
+                        break;
+                    case TipoMensagem.CANCELVOO:
+                        cancelarVoo(f.getDados());
+                        break;
+                    case TipoMensagem.ADDINFO:
+                        addInfo(f.getDados());
+                        break;
+                    case TipoMensagem.ENCDIA:
+                        encerrarDia(f.getDados());
+                        break;
+                    case TipoMensagem.ABREDIA:
+                        abrirDia(f.getDados());
+                        break;
+                    case TipoMensagem.RESERVPERCURSO:
+                        reservarVooPorPercurso(f.getDados());
+                        break;
+                    case TipoMensagem.LSVOO:
+                        obterListaVoo(f.getDados());
                         break;
                 }
             }
@@ -51,77 +71,151 @@ public class Worker implements Runnable {
         }
     }
 
-    private void autenticar(List<byte[]> dados) throws Exception {
-        String email = new String(dados.get(0));
-        String password = new String(dados.get(1));
+    private void autenticar(List<String> dados) throws Exception {
+        String email = dados.get(0);
+        String password = dados.get(1);
 
-        List<byte[]> respDados = new ArrayList<>();
+        String tipoResp;
+        List<String> respDados = new ArrayList<>();
         try {
             int authority = ln.autenticar(email, password);
             this.email = email;
-            respDados.add("OK".getBytes(StandardCharsets.UTF_8));
-            respDados.add((authority + "").getBytes(StandardCharsets.UTF_8));
+            tipoResp = TipoMensagem.OK;
+            respDados.add(authority + "");
         } catch (CredenciaisErradasException e) {
-            respDados.add("CredenciaisErradas".getBytes(StandardCharsets.UTF_8));
+            tipoResp = CredenciaisErradasException.Tipo;
         }
-        tc.send(0, 0, respDados);
+        tc.send(tipoResp, respDados);
     }
 
-    private void registar(List<byte[]> dados) throws IOException {
-        String email = new String(dados.get(0));
-        String username = new String(dados.get(1));
-        String password = new String(dados.get(2));
-        int authority = Integer.parseInt(new String(dados.get(3)));
+    private void registar(List<String> dados) throws IOException {
+        String email = (dados.get(0));
+        String username = dados.get(1);
+        String password = dados.get(2);
+        int authority = Integer.parseInt(dados.get(3));
 
-        List<byte[]> respDados = new ArrayList<>();
+        String tipoDados;
+        List<String> respDados = new ArrayList<>();
         try {
             ln.registar(email, username, password, authority);
-            respDados.add("OK".getBytes(StandardCharsets.UTF_8));
+            tipoDados = TipoMensagem.OK;
         } catch (UtilizadorExisteException e) {
-            respDados.add("UtilizadorExiste".getBytes(StandardCharsets.UTF_8));
+            tipoDados = UtilizadorExisteException.Tipo;
         } catch (UsernameInvalidoException e) {
-            respDados.add("UsernameInvalido".getBytes(StandardCharsets.UTF_8));
+            tipoDados = UsernameInvalidoException.Tipo;
         } catch (PasswordInvalidaException e) {
-            respDados.add("PasswordInvalido".getBytes(StandardCharsets.UTF_8));
+            tipoDados = PasswordInvalidaException.Tipo;
         }
-        Frame f = new Frame(0, 1, respDados);
+        Frame f = new Frame(tipoDados, respDados);
         tc.send(f);
     }
 
-    private void reservarVoo(List<byte[]> dados) throws IOException {
-        String partida = new String(dados.get(0));
-        String destino = new String(dados.get(1));
-        LocalDate data = LocalDate.parse(new String(dados.get(2)), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    private void reservarVoo(List<String> dados) throws IOException {
+        String partida = dados.get(0);
+        String destino = dados.get(1);
+        LocalDate data = LocalDate.parse(dados.get(2), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
-        List<byte[]> respDados = new ArrayList<>();
+        String tipoResp;
+        List<String> respDados = new ArrayList<>();
         try {
             int id = ln.reservarVoo(partida, destino, data);
-            respDados.add("OK".getBytes(StandardCharsets.UTF_8));
-            respDados.add((id + "").getBytes(StandardCharsets.UTF_8));
+            tipoResp = TipoMensagem.OK;
+            respDados.add(id + "");
         } catch (VooInexistenteException e) {
-            respDados.add("VooInexistente".getBytes(StandardCharsets.UTF_8));
+            tipoResp = VooInexistenteException.Tipo;
         }
-        tc.send(0, 2, respDados);
+        tc.send(tipoResp, respDados);
     }
 
-    private void cancelarVoo(List<byte[]> dados) {
+    private void cancelarVoo(List<String> dados) throws IOException {
+        String tipoResp;
 
+        int ID = Integer.parseInt(dados.get(0));
+        try {
+            ln.cancelarVoo(ID);
+            tipoResp = TipoMensagem.OK;
+        } catch (ReservaInexistenteException e) {
+            tipoResp = ReservaInexistenteException.Tipo;
+        }
+        tc.send(tipoResp, new ArrayList<>());
     }
 
-    private void addInfo(List<byte[]> dados) {
-        String partida = new String(dados.get(0));
-        String destino = new String(dados.get(1));
-        int capacidade = Integer.parseInt(new String(dados.get(2)));
+    private void addInfo(List<String> dados) throws IOException {
+        String partida = dados.get(0);
+        String destino = dados.get(1);
+        int capacidade = Integer.parseInt(dados.get(2));
 
-        //List<byte[]>
+        String tipoResp;
+        List<String> resposta = new ArrayList<>();
         try {
             ln.addInfo(partida, destino, capacidade);
+            tipoResp = TipoMensagem.OK;
         } catch (VooExisteException e) {
-
+            tipoResp = VooExisteException.Tipo;
         } catch (CapacidadeInvalidaException e) {
-            e.printStackTrace();
+            tipoResp = CapacidadeInvalidaException.Tipo;
         } catch (PartidaDestinoIguaisException e) {
-            e.printStackTrace();
+            tipoResp = PartidaDestinoIguaisException.Tipo;
         }
+        tc.send(tipoResp, resposta);
+    }
+
+    private void encerrarDia(List<String> dados) throws IOException {
+        String tipoResp;
+        try {
+            ln.encerrarDia();
+            tipoResp = TipoMensagem.OK;
+        } catch (DiaJaEncerradoException e) {
+            tipoResp = DiaJaEncerradoException.Tipo;
+        }
+        tc.send(tipoResp, new ArrayList<>());
+    }
+
+    private void abrirDia(List<String> dados) throws IOException {
+        String tipoResp;
+        try {
+            ln.abrirDia();
+            tipoResp = TipoMensagem.OK;
+        } catch (DiaJaAbertoException e) {
+            tipoResp = DiaJaAbertoException.Tipo;
+        }
+        tc.send(tipoResp, new ArrayList<>());
+    }
+
+    private void reservarVooPorPercurso(List<String> dados) throws IOException {
+        String tipoResp;
+
+        LocalDate dataInicio = LocalDate.parse(dados.get(0), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDate dataFim =  LocalDate.parse(dados.get(1), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        List<String> pontos = new ArrayList<>();
+        for(int i = 2; i < dados.size(); i++) {
+            pontos.add(dados.get(i));
+        }
+
+        try {
+            ln.reservarVooPorPercurso(pontos, dataInicio, dataFim);
+            tipoResp = TipoMensagem.OK;
+        } catch (VooInexistenteException e) {
+            tipoResp = VooExisteException.Tipo;
+        } catch (DataInvalidaException e) {
+            tipoResp = DataInvalidaException.Tipo;
+        } catch (SemReservaDisponivelException e) {
+            tipoResp = SemReservaDisponivelException.Tipo;
+        }
+
+        tc.send(tipoResp, new ArrayList<>());
+    }
+
+    private void obterListaVoo(List<String> dados) throws IOException {
+        List<Voo> voos = ln.obterListaVoo();
+
+        List<String> respDados = new ArrayList<>();
+        for(Voo v: voos) {
+            respDados.add(v.getPartida());
+            respDados.add(v.getDestino());
+            respDados.add(v.getCapacidade() + "");
+        }
+    tc.send(TipoMensagem.LSVOO, respDados);
     }
 }

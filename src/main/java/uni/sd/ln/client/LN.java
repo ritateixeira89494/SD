@@ -8,16 +8,15 @@ import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.net.Frame;
 import uni.sd.net.TaggedConnection;
+import uni.sd.net.TipoMensagem;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Formatter;
 
 public class LN implements ILN {
     TaggedConnection tc;
@@ -28,105 +27,153 @@ public class LN implements ILN {
 
     @Override
     public int autenticar(String email, String password) throws CredenciaisErradasException, IOException {
-        List<byte[]> dados = new ArrayList<>();
-        dados.add(email.getBytes(StandardCharsets.UTF_8));
-        dados.add(password.getBytes(StandardCharsets.UTF_8));
-        tc.send(0, 0, dados);
+        List<String> dados = new ArrayList<>();
+        dados.add(email);
+        dados.add(password);
+        tc.send("AUTH", dados);
 
         Frame respostaFrame = tc.receive();
-        String resposta = new String(respostaFrame.getDados().get(0));
-        if(!resposta.equals("OK")) {
+        if(respostaFrame.getTipo().equals(CredenciaisErradasException.Tipo)) {
             throw new CredenciaisErradasException();
         }
-        return Integer.parseInt(new String(respostaFrame.getDados().get(1)));
+        return Integer.parseInt(respostaFrame.getDados().get(0));
     }
 
     @Override
     public void registar(String email, String username, String password, int authority) throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException {
-        List<byte[]> dados = new ArrayList<>();
-        dados.add(email.getBytes(StandardCharsets.UTF_8));
-        dados.add(username.getBytes(StandardCharsets.UTF_8));
-        dados.add(password.getBytes(StandardCharsets.UTF_8));
-        dados.add((authority + "").getBytes(StandardCharsets.UTF_8));
-        tc.send(0, 1, dados);
+        List<String> dados = new ArrayList<>();
+        dados.add(email);
+        dados.add(username);
+        dados.add(password);
+        dados.add(authority + "");
+        tc.send(TipoMensagem.REG, dados);
 
         Frame respostaFrame = tc.receive();
-        String resposta = new String(respostaFrame.getDados().get(0));
-        switch(resposta) {
-            case "UserExiste":
+        switch(respostaFrame.getTipo()) {
+            case UtilizadorExisteException.Tipo:
                 throw new UtilizadorExisteException();
-            case "UsernameInvalido":
+            case UsernameInvalidoException.Tipo:
                 throw new UsernameInvalidoException();
-            case "PasswordInvalida":
+            case PasswordInvalidaException.Tipo:
                 throw new PasswordInvalidaException();
         }
     }
 
     @Override
     public int reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException, IOException {
-        List<byte[]> dados = new ArrayList<>();
-        dados.add(partida.getBytes(StandardCharsets.UTF_8));
-        dados.add(partida.getBytes(StandardCharsets.UTF_8));
-        dados.add(data.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")).getBytes(StandardCharsets.UTF_8));
+        List<String> dados = new ArrayList<>();
+        dados.add(partida);
+        dados.add(destino);
+        dados.add(data.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
-        tc.send(0, 2, dados);
+        tc.send(TipoMensagem.RESVOO, dados);
         Frame f = tc.receive();
 
-        String resposta = new String(f.getDados().get(0));
-        if(resposta.equals("VooInexistente")) {
+        if(f.getTipo().equals(VooInexistenteException.Tipo)) {
             throw new VooInexistenteException();
         }
 
-        return Integer.parseInt(new String(f.getDados().get(1)));
+        return Integer.parseInt(f.getDados().get(0));
     }
 
     @Override
-    public void cancelarVoo(String id) throws ReservaInexistenteException {
+    public void cancelarVoo(int ID) throws ReservaInexistenteException, IOException {
+        List<String> dados = new ArrayList<>();
+        dados.add(ID + "");
+        tc.send(TipoMensagem.PERCURSOSPOS, dados);
 
+        Frame f = tc.receive();
+        if(f.getTipo().equals(ReservaInexistenteException.Tipo)) {
+            throw new ReservaInexistenteException();
+        }
     }
 
     @Override
     public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException {
-        List<byte[]> dados = new ArrayList<>();
-        dados.add(partida.getBytes(StandardCharsets.UTF_8));
-        dados.add(destino.getBytes(StandardCharsets.UTF_8));
-        dados.add((capacidade + "").getBytes(StandardCharsets.UTF_8));
+        List<String> dados = new ArrayList<>();
+        dados.add(partida);
+        dados.add(destino);
+        dados.add(capacidade + "");
 
-        tc.send(0, 4, dados);
+        tc.send(TipoMensagem.ADDINFO, dados);
         Frame f = tc.receive();
-        String resposta = new String(f.getDados().get(0));
-        switch(resposta) {
-            case "VooExiste":
+        switch(f.getTipo()) {
+            case VooExisteException.Tipo:
                 throw new VooExisteException();
-            case "CapacidadeInvalida":
+            case CapacidadeInvalidaException.Tipo:
                 throw new CapacidadeInvalidaException();
-            case "PartidaDestinoIguais":
+            case PartidaDestinoIguaisException.Tipo:
                 throw new PartidaDestinoIguaisException();
         }
     }
 
     @Override
-    public void encerrarDia() throws DiaJaEncerradoException {
+    public void encerrarDia() throws DiaJaEncerradoException, IOException {
+        tc.send(TipoMensagem.ENCDIA, new ArrayList<>());
+        Frame f = tc.receive();
 
+        if(f.getTipo().equals(DiaJaEncerradoException.Tipo)) {
+            throw new DiaJaEncerradoException();
+        }
     }
 
     @Override
-    public void abrirDia() throws DiaJaAbertoException {
+    public void abrirDia() throws DiaJaAbertoException, IOException {
+        tc.send(TipoMensagem.ABREDIA, new ArrayList<>());
+        Frame f = tc.receive();
 
+        if(f.getTipo().equals(DiaJaAbertoException.Tipo)) {
+            throw new DiaJaAbertoException();
+        }
     }
 
     @Override
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException {
+    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException {
+        List<String> dados = new ArrayList<>();
+        dados.add(dataInicio.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        dados.add(dataFim.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        dados.addAll(voos);
 
+        tc.send(TipoMensagem.RESERVPERCURSO, dados);
+        Frame f = tc.receive();
+        switch(f.getTipo()) {
+            case VooInexistenteException.Tipo:
+                throw new VooInexistenteException();
+            case DataInvalidaException.Tipo:
+                throw new DataInvalidaException();
+            case SemReservaDisponivelException.Tipo:
+                throw new SemReservaDisponivelException();
+        }
     }
 
     @Override
-    public List<Voo> obterListaVoo() {
-        return null;
+    public List<Voo> obterListaVoo() throws IOException {
+        tc.send(TipoMensagem.LSVOO, new ArrayList<>());
+        Frame f = tc.receive();
+
+        List<String> dados = f.getDados();
+        List<Voo> voos = new ArrayList<>();
+        for(int i = 0; i < dados.size(); i+=3) {
+            voos.add(new Voo(dados.get(i), dados.get(i+1), Integer.parseInt(dados.get(i+2))));
+        }
+        return voos;
     }
 
     @Override
-    public List<Voo> obterPercursosPossiveis(String partida, String destino) {
-        return null;
+    public List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException {
+        List<String> dados = new ArrayList<>();
+        dados.add(partida);
+        dados.add(destino);
+
+        tc.send(TipoMensagem.PERCURSOSPOS, dados);
+        Frame f = tc.receive();
+        List<String> respDados = f.getDados();
+
+        List<Voo> voos = new ArrayList<>();
+        for(int i = 0; i < respDados.size(); i+=3) {
+            voos.add(new Voo(respDados.get(i), respDados.get(i+1), Integer.parseInt(respDados.get(i+2))));
+        }
+
+        return voos;
     }
 }

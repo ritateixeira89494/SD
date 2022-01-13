@@ -1,10 +1,13 @@
 package uni.sd.data.ssvoos.reservas;
 
+import uni.sd.data.ssvoos.voos.VoosDAO;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
 import uni.sd.ln.server.ssvoos.exceptions.ReservaExisteException;
 import uni.sd.ln.server.ssvoos.exceptions.ReservaInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.VooExisteException;
 import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.server.ssvoos.reservas.Reserva;
+import uni.sd.ln.server.ssvoos.voos.Voo;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -22,6 +25,7 @@ public class ReservasDAO implements IReservasDAO {
      * Guarda um novo registo de reserva na base de dados.
      * 
      * @param r Reserva a ser guardada.
+     * @return ID da reserva guardada
      * @throws SQLException Caso haja algum problema com a base de dados
      * @throws UtilizadorInexistenteException Caso o utilizador associado à reserva não exista
      * @throws VooInexistenteException Caso o voo reservado não exista
@@ -29,7 +33,7 @@ public class ReservasDAO implements IReservasDAO {
      *                                e para o mesmo dia.
      */
     @Override
-    public void saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException {
+    public int saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException {
         int idUtilizador = getUtilizadorID(r.getEmailUtilizador());
         int idVoo = getVooID(r.getPartida(), r.getDestino());
 
@@ -56,6 +60,13 @@ public class ReservasDAO implements IReservasDAO {
         ps.setDate(3, dataReserva);
         ps.setDate(4, dataVoo);
         ps.executeUpdate();
+
+        try {
+            return getIDReserva(r.getEmailUtilizador(), r.getPartida(), r.getDestino(), r.getDataVoo());
+        } catch (ReservaInexistenteException e) {
+            System.out.println("WTF!!! Como!!!");
+            return -1;
+        }
     }
 
     /**
