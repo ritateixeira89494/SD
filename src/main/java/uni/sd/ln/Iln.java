@@ -15,12 +15,12 @@ public interface Iln {
     void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException;
 
-    public void reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException;
-    public void cancelarVoo(int id) throws ReservaInexistenteException;
-    public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException;
+    public int reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException;
+    public void cancelarVoo(int id) throws ReservaInexistenteException, VooInexistenteException, SQLException, UtilizadorInexistenteException;
+    public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException;
     public void encerrarDia() throws DiaJaEncerradoException;
     public void abrirDia() throws DiaJaAbertoException;
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException;
-    public List<Voo> obterListaVoo();
-    public List<Voo> obterPercursosPossiveis(String partida, String destino);
+    public List<Integer> reservarVooPorPercurso(List<String> voos, LocalDate dataInicio, LocalDate dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException;
+    public List<Voo> obterListaVoo() throws SQLException;
+    public List<Integer> obterPercursosPossiveis(String partida, String destino);
 }

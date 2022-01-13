@@ -5,6 +5,7 @@ import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.ssvoos.voos.Voo;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 public interface IVoosDAO {
@@ -14,4 +15,6 @@ public interface IVoosDAO {
     Map<String, Voo> getVooPorDestino(String destino) throws SQLException, VooInexistenteException;
     void updateVoo(Voo v) throws VooInexistenteException, SQLException;
     void removeVoo(String partida, String destino) throws SQLException, VooInexistenteException;
+
+    List<Voo> getTodosVoos() throws SQLException;
 }

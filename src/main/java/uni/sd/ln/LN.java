@@ -34,18 +34,21 @@ public class LN implements Iln {
     }
 
     @Override
-    public void reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException {
-        vooFacade.reservarVoo(partida, destino, data);
+    public int reservarVoo(String partida, String destino, LocalDate data)
+            throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException,
+            ReservaInexistenteException {
+
+        return vooFacade.reservarVoo(partida, destino, data);
     }
 
     @Override
-    public void cancelarVoo(int id) throws ReservaInexistenteException {
+    public void cancelarVoo(int id) throws ReservaInexistenteException, VooInexistenteException, SQLException, UtilizadorInexistenteException {
         vooFacade.cancelarVoo(id);
     }
 
     @Override
     public void addInfo(String partida, String destino, int capacidade)
-            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException {
+            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException {
         vooFacade.addInfo(partida, destino, capacidade);
     }
 
@@ -60,18 +63,18 @@ public class LN implements Iln {
     }
 
     @Override
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
-            throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException {
-        vooFacade.reservarVooPorPercurso(voos, dataInicio, dataFim);
+    public List<Integer> reservarVooPorPercurso(List<String> voos, LocalDate dataInicio, LocalDate dataFim)
+            throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+        return vooFacade.reservarVooPorPercurso(voos, dataInicio, dataFim);
     }
 
     @Override
-    public List<Voo> obterListaVoo() {
+    public List<Voo> obterListaVoo() throws SQLException {
         return vooFacade.obterListaVoo();
     }
 
     @Override
-    public List<Voo> obterPercursosPossiveis(String partida, String destino) {
+    public List<Integer> obterPercursosPossiveis(String partida, String destino) {
         return vooFacade.obterPercursosPossiveis(partida, destino);
     }
     

@@ -5,7 +5,9 @@ import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.ssvoos.voos.Voo;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class VoosDAO implements IVoosDAO{
@@ -199,5 +201,25 @@ public class VoosDAO implements IVoosDAO{
         ps.setString(1, partida);
         ps.setString(2, destino);
         ps.executeUpdate();
+    }
+
+    /**
+     * Obtém a lista de todos os voos registados na base de dados.
+     *
+     * @return Lista com todos os voos existentes na base de dados
+     * @throws SQLException Caso haja um problema com a base de dados
+     */
+    @Override
+    public List<Voo> getTodosVoos() throws SQLException {
+        PreparedStatement ps = conn.prepareStatement("select * from Voo");
+        ResultSet rs = ps.executeQuery();
+
+        List<Voo> voos = new ArrayList<>();
+        while(rs.next()) {
+            Voo v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
+            voos.add(v);
+        }
+
+        return voos;
     }
 }

@@ -20,8 +20,9 @@ public class ReservasDAO implements IReservasDAO {
 
     /**
      * Guarda um novo registo de reserva na base de dados.
-     * 
+     *
      * @param r Reserva a ser guardada.
+     * @return ID da reserva guardada
      * @throws SQLException Caso haja algum problema com a base de dados
      * @throws UtilizadorInexistenteException Caso o utilizador associado à reserva não exista
      * @throws VooInexistenteException Caso o voo reservado não exista
@@ -29,7 +30,7 @@ public class ReservasDAO implements IReservasDAO {
      *                                e para o mesmo dia.
      */
     @Override
-    public void saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException {
+    public int saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException {
         int idUtilizador = getUtilizadorID(r.getEmailUtilizador());
         int idVoo = getVooID(r.getPartida(), r.getDestino());
 
@@ -56,6 +57,13 @@ public class ReservasDAO implements IReservasDAO {
         ps.setDate(3, dataReserva);
         ps.setDate(4, dataVoo);
         ps.executeUpdate();
+
+        try {
+            return getIDReserva(r.getEmailUtilizador(), r.getPartida(), r.getDestino(), r.getDataVoo());
+        } catch (ReservaInexistenteException e) {
+            System.out.println("WTF!!! Como!!!");
+            return -1;
+        }
     }
 
     /**
@@ -282,5 +290,38 @@ public class ReservasDAO implements IReservasDAO {
         }
 
         return rs.getInt("idVoo");
+    }
+
+
+    /**
+     * Obtém o ID de uma reserva.
+     *
+     * @param email Email do utilizador que fez a reserva
+     * @param partida Partida do voo
+     * @param destino Destino do voo
+     * @param data Data do voo
+     * @return ID da reserva
+     * @throws SQLException Caso haja algum problema com a base de dados
+     * @throws UtilizadorInexistenteException Caso o utilizador não exista
+     * @throws VooInexistenteException Caso o voo não exista
+     * @throws ReservaInexistenteException Caso a reserva não exista
+     */
+    @Override
+    public int getIDReserva(String email, String partida, String destino, LocalDate data) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
+        int idUtilizador = getUtilizadorID(email);
+        int idVoo = getVooID(partida, destino);
+
+        PreparedStatement ps = conn.prepareStatement(
+                "select idReserva from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
+        );
+        ps.setInt(1, idUtilizador);
+        ps.setInt(2, idVoo);
+        ps.setDate(3, java.sql.Date.valueOf(data));
+        ResultSet rs = ps.executeQuery();
+        if(!rs.next()) {
+            throw new ReservaInexistenteException();
+        }
+
+        return rs.getInt("idReserva");
     }
 }

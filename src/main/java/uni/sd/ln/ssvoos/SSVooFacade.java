@@ -1,8 +1,10 @@
 package uni.sd.ln.ssvoos;
 
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,17 +34,20 @@ public class SSVooFacade implements ISSVoo {
 
     /**
      * Reserva um voo de acordo com um id e uma data.
-     * 
+     *
      * @param partida origem do voo
      * @param destino destino do voo
      * @param data Data do voo a reservar
      */
     @Override
-    public void reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException,
-            SQLException, UtilizadorInexistenteException, ReservaExisteException {
+    public int reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException,
+            SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
         Voo v = vDAO.getVoo(partida, destino);
-        Reserva r = new Reserva(email, partida, destino, data, LocalDate.now());
+        LocalDate dataNow = LocalDate.now();
+        Reserva r = new Reserva(email, partida, destino, data, dataNow);
         reservasDAO.saveReserva(r);
+
+        return reservasDAO.getIDReserva(email, partida, destino, data);
     }
 
     /**
@@ -74,7 +79,7 @@ public class SSVooFacade implements ISSVoo {
      */
     @Override
     public void addInfo(String partida, String destino, int capacidade)
-            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException {
+            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException {
         if(capacidade <= 0) {
             throw new CapacidadeInvalidaException("Capacidade: " + capacidade);
         }
@@ -82,13 +87,8 @@ public class SSVooFacade implements ISSVoo {
             throw new PartidaDestinoIguaisException("Partida: " + partida + " | Destino: " + destino);
         }
 
-        String id = partida + ":" + destino;
-        if(voos.containsKey(id)) {
-            throw new VooExisteException("ID: " + id + " já existe!");
-        }
-
         Voo novoVoo = new Voo(partida,destino,capacidade);
-        voos.put(id, novoVoo);
+        vDAO.saveVoo(novoVoo);
     }
 
     /**
@@ -125,13 +125,17 @@ public class SSVooFacade implements ISSVoo {
      * @param dataFim Limite superior da data de reserva
      */
     @Override
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
-            throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException {
-        // TODO Implementar este método
-        for(int i = 0; i < voos.size(); i++){
-
+    public List<Integer> reservarVooPorPercurso(List<String> voos, LocalDate dataInicio, LocalDate dataFim)
+            throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+        // TODO EU ESTOU A PÔR A FAZER NOVA RESERVA COM INTERVALOS DE 1 DIA MAS NÃO ACHO BEM POR CAUSA DA DATA DE FIM
+        List<Integer> res = new ArrayList<Integer>();
+        int hours = 0, i;
+        for(i = 0; i < voos.size(); i++){
+            int idReserva = reservarVoo(voos.get(i), voos.get(i+1), dataInicio.plusDays(1));
+            res.add(idReserva);
+            hours += 12;
         }
-        
+        return res;
     }
 
     /**
@@ -140,10 +144,8 @@ public class SSVooFacade implements ISSVoo {
      * @return Lista com todos os voos do sistema.
      */
     @Override
-    public List<Voo> obterListaVoo() {
-        return voos.values().stream()
-                            .map(Voo::new)
-                            .collect(Collectors.toList());
+    public List<Voo> obterListaVoo() throws SQLException {
+        return vDAO.getTodosVoos();
     }
 
     /**
@@ -157,9 +159,12 @@ public class SSVooFacade implements ISSVoo {
      *         e acabados em destino com um máximo de 3 saltos
      */
     @Override
-    public List<Voo> obterPercursosPossiveis(String partida, String destino) {
-        // TODO Implementar este método
-        return null;
+    public List<Integer> obterPercursosPossiveis(String partida, String destino) {
+        // TODO ACABAR MÉTODO
+        List<Integer> res = new ArrayList<>();
+
+
+        return res;
     }
     
 }

@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import java.awt.FlowLayout;
+import java.sql.SQLException;
 
 import uni.sd.ln.Iln;
 
@@ -65,7 +66,11 @@ public class MenuPrincipal extends JFrame {
              *              Nós aqui não o usamos.
              */
             public void actionPerformed(ActionEvent event) {
-                new ListaVoos(ln.obterListaVoo());
+                try {
+                    new ListaVoos(ln.obterListaVoo());
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
