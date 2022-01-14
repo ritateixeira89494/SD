@@ -7,7 +7,6 @@ import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.server.ssvoos.reservas.Reserva;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +14,8 @@ import java.util.Map;
 public class ReservasDAO implements IReservasDAO {
     Connection conn;
 
-    public ReservasDAO() throws SQLException {
-        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "sd_user", "");
+    public ReservasDAO(Connection conn) throws SQLException {
+        this.conn = conn;
     }
 
     /**

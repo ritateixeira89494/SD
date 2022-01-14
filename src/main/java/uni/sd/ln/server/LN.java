@@ -1,5 +1,6 @@
 package uni.sd.ln.server;
 
+import uni.sd.data.IDados;
 import uni.sd.ln.server.ssutilizadores.ISSUtilizador;
 import uni.sd.ln.server.ssutilizadores.SSUtilizadorFacade;
 import uni.sd.ln.server.ssutilizadores.exceptions.*;
@@ -13,10 +14,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class LN implements Iln {
-    ISSUtilizador userFacade = new SSUtilizadorFacade();
-    ISSVoo vooFacade = new SSVooFacade();
+    ISSUtilizador userFacade;
+    ISSVoo vooFacade;
 
-    public LN() throws SQLException {
+    public LN(IDados daos) throws SQLException {
+        userFacade = new SSUtilizadorFacade(daos);
+        vooFacade = new SSVooFacade(daos);
     }
 
     @Override
@@ -44,7 +47,7 @@ public class LN implements Iln {
 
     @Override
     public void addInfo(String partida, String destino, int capacidade, int duracao)
-            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException {
+            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException, DuracaoInvalidaException {
         vooFacade.addInfo(partida, destino, capacidade, duracao);
     }
 

@@ -1,7 +1,6 @@
 package uni.sd.ln.server.ssvoos;
 
-import uni.sd.data.ssvoos.reservas.ReservasDAO;
-import uni.sd.data.ssvoos.voos.VoosDAO;
+import uni.sd.data.IDados;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.reservas.Reserva;
@@ -14,13 +13,11 @@ import java.util.List;
 
 
 public class SSVooFacade implements ISSVoo {
-    private final VoosDAO vDAO;
-    private final ReservasDAO reservasDAO;
+    IDados daos;
     private boolean diaAberto = true;
 
-    public SSVooFacade() throws SQLException {
-        vDAO = new VoosDAO();
-        reservasDAO = new ReservasDAO();
+    public SSVooFacade(IDados daos) {
+        this.daos = daos;
     }
 
     /**
@@ -33,12 +30,12 @@ public class SSVooFacade implements ISSVoo {
     @Override
     public int reservarVoo(String email, String partida, String destino, LocalDateTime data) throws VooInexistenteException,
             SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
-        Voo v = vDAO.getVoo(partida, destino);
+        Voo v = daos.getVoo(partida, destino);
         LocalDateTime dataNow = LocalDateTime.now();
         Reserva r = new Reserva(email, partida, destino, data, dataNow);
-        reservasDAO.saveReserva(r);
+        daos.saveReserva(r);
 
-        return reservasDAO.getIDReserva(email, partida, destino, data);
+        return daos.getIDReserva(email, partida, destino, data);
     }
 
     /**
@@ -48,14 +45,14 @@ public class SSVooFacade implements ISSVoo {
      */
     @Override
     public void cancelarVoo(int idReserva) throws ReservaInexistenteException, VooInexistenteException, SQLException, UtilizadorInexistenteException {
-        Reserva r = reservasDAO.getReservaPorID(idReserva);
+        Reserva r = daos.getReservaPorID(idReserva);
 
         String email = r.getEmailUtilizador();
         String partida = r.getPartida();
         String destino = r.getDestino();
         LocalDateTime data = r.getDataVoo();
 
-        reservasDAO.removeReserva(email, partida, destino, data);
+        daos.removeReserva(email, partida, destino, data);
     }
 
     /**
@@ -70,16 +67,19 @@ public class SSVooFacade implements ISSVoo {
      */
     @Override
     public void addInfo(String partida, String destino, int capacidade, int duracao)
-            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException {
+            throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException, DuracaoInvalidaException {
         if (capacidade <= 0) {
             throw new CapacidadeInvalidaException("Capacidade: " + capacidade);
         }
         if (partida.equals(destino)) {
             throw new PartidaDestinoIguaisException("Partida: " + partida + " | Destino: " + destino);
         }
+        if (duracao <= 0) {
+            throw new DuracaoInvalidaException();
+        }
 
         Voo novoVoo = new Voo(partida, destino, capacidade, 0, duracao);
-        vDAO.saveVoo(novoVoo);
+        daos.saveVoo(novoVoo);
     }
 
     /**
@@ -136,7 +136,7 @@ public class SSVooFacade implements ISSVoo {
      */
     @Override
     public List<Voo> obterListaVoo() throws SQLException {
-        return vDAO.getTodosVoos();
+        return daos.getTodosVoos();
     }
 
     /**

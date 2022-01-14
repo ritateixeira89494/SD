@@ -97,7 +97,7 @@ public class LN implements ILN {
     }
 
     @Override
-    public void addInfo(String partida, String destino, int capacidade, int duracao) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException {
+    public void addInfo(String partida, String destino, int capacidade, int duracao) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException, DuracaoInvalidaException {
         List<String> dados = new ArrayList<>();
         dados.add(partida);
         dados.add(destino);
@@ -113,6 +113,8 @@ public class LN implements ILN {
                 throw new CapacidadeInvalidaException();
             case PartidaDestinoIguaisException.Tipo:
                 throw new PartidaDestinoIguaisException();
+            case DuracaoInvalidaException.Tipo:
+                throw new DuracaoInvalidaException();
         }
     }
 

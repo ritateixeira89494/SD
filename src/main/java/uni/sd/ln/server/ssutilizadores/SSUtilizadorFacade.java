@@ -2,20 +2,17 @@ package uni.sd.ln.server.ssutilizadores;
 
 import java.sql.SQLException;
 
-import uni.sd.data.ssutilizadores.UtilizadoresDAO;
+import uni.sd.data.IDados;
 import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssutilizadores.utilizadores.Administrador;
 import uni.sd.ln.server.ssutilizadores.utilizadores.Utilizador;
 import uni.sd.ln.server.ssutilizadores.utilizadores.UtilizadorNormal;
 
 public class SSUtilizadorFacade implements ISSUtilizador {
-    /**
-     * Lista de utilizadores.
-     */
-    private UtilizadoresDAO udao;
+    IDados daos;
 
-    public SSUtilizadorFacade() throws SQLException {
-        udao = new UtilizadoresDAO();
+    public SSUtilizadorFacade(IDados daos) {
+        this.daos = daos;
     }
 
     /**
@@ -29,7 +26,7 @@ public class SSUtilizadorFacade implements ISSUtilizador {
     @Override
     public int autenticar(String email, String password) throws CredenciaisErradasException, SQLException {
         try {
-            Utilizador user = udao.getUtilizador(email);
+            Utilizador user = daos.getUtilizador(email);
             if(!user.getPassword().equals(password)) {
                 throw new CredenciaisErradasException("Password Errada!");
             }
@@ -76,7 +73,7 @@ public class SSUtilizadorFacade implements ISSUtilizador {
                 System.err.println("WTF!! How did i get here lol");
                 throw new UsernameInvalidoException("Exception temporária! Nunca deveria ter chegado aqui, mas este é o mundo em que vivemos");
         }
-        udao.saveUtilizador(novoUser);
+        daos.saveUtilizador(novoUser);
     }
     
 }

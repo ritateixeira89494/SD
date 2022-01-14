@@ -169,6 +169,8 @@ public class Worker implements Runnable {
             tipoResp = CapacidadeInvalidaException.Tipo;
         } catch (PartidaDestinoIguaisException e) {
             tipoResp = PartidaDestinoIguaisException.Tipo;
+        } catch (DuracaoInvalidaException e) {
+            tipoResp = DuracaoInvalidaException.Tipo;
         }
         tc.send(tipoResp, resposta);
     }

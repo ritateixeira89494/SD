@@ -5,14 +5,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 
+import uni.sd.data.DadosDAO;
 import uni.sd.ln.server.Iln;
 import uni.sd.ln.server.LN;
 import uni.sd.net.TaggedConnection;
 
 public class Server {
-    Iln ln;
     public static void main(String[] args) throws IOException, SQLException {
-        Iln ln = new LN();
+        Iln ln = new LN(new DadosDAO());
         int port = Integer.parseInt(args[0]);
         ServerSocket ss = new ServerSocket(port);
         try {

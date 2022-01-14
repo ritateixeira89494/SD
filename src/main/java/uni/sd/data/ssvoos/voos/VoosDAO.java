@@ -13,8 +13,8 @@ import java.util.Map;
 public class VoosDAO implements IVoosDAO{
     final Connection conn;
 
-    public VoosDAO() throws SQLException {
-        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "sd_user", "");
+    public VoosDAO(Connection conn) throws SQLException {
+        this.conn = conn;
     }
 
     /**

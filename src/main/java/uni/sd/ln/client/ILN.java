@@ -15,7 +15,7 @@ public interface ILN {
 
     int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException;
     void cancelarVoo(int id) throws ReservaInexistenteException, IOException, VooInexistenteException, UtilizadorInexistenteException;
-    void addInfo(String partida, String destino, int capacidade, int duracao) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException;
+    void addInfo(String partida, String destino, int capacidade, int duracao) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException, DuracaoInvalidaException;
     void encerrarDia() throws DiaJaEncerradoException, IOException;
     void abrirDia() throws DiaJaAbertoException, IOException;
     void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException;
