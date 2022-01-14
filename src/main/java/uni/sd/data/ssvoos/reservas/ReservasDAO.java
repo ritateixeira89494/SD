@@ -10,12 +10,19 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 public class ReservasDAO implements IReservasDAO {
-    Connection conn;
+    private final Connection conn;
+    private final Lock reservaLock;
+    private final Lock userLock;
+    private final Lock vooLock;
 
-    public ReservasDAO(Connection conn) throws SQLException {
+    public ReservasDAO(Connection conn, Lock reservaLock, Lock userLock, Lock vooLock) {
         this.conn = conn;
+        this.reservaLock = reservaLock;
+        this.userLock = userLock;
+        this.vooLock = vooLock;
     }
 
     /**
@@ -31,32 +38,48 @@ public class ReservasDAO implements IReservasDAO {
      */
     @Override
     public int saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException {
-        int idUtilizador = getUtilizadorID(r.getEmailUtilizador());
-        int idVoo = getVooID(r.getPartida(), r.getDestino());
-
         Timestamp dataVoo = Timestamp.valueOf(r.getDataVoo());
         Timestamp dataReserva = Timestamp.valueOf(r.getDataReserva());
 
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
         );
-        ps.setInt(1, idUtilizador);
-        ps.setInt(2, idVoo);
         ps.setTimestamp(3, dataVoo);
-        ResultSet rs = ps.executeQuery();
-        if(rs.next()) {
-            throw new ReservaExisteException();
-        }
 
-        ps = conn.prepareStatement(
+        PreparedStatement savePS = conn.prepareStatement(
                 "insert into Reserva(idUtilizador, idVoo, Data_Reserva, Data_Voo) value (?,?,?,?)"
         );
-
+        savePS.setTimestamp(3, dataReserva);
+        savePS.setTimestamp(4, dataVoo);
+        // Obtemos todos os locks
+        userLock.lock();
+        vooLock.lock();
+        reservaLock.lock();
+        // Obtemos o id do utilizador e libertamos
+        // o lock de utilizadores
+        int idUtilizador = getUtilizadorID(r.getEmailUtilizador());
+        userLock.unlock();
+        // Obtemos o id do voo e libertamos
+        // o lock de voos
+        int idVoo = getVooID(r.getPartida(), r.getDestino());
+        vooLock.unlock();
+        // Adicionamos os à query
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setTimestamp(3, dataReserva);
-        ps.setTimestamp(4, dataVoo);
-        ps.executeUpdate();
+        // Executamos a query e verificamos
+        // Se a reserva já existe
+        ResultSet rs = ps.executeQuery();
+        if(rs.next()) {
+            // Antes de atirarmos a exception, libertamos o lock
+            reservaLock.unlock();
+            throw new ReservaExisteException();
+        }
+        // Adicionamos os ids ao insert
+        savePS.setInt(1, idUtilizador);
+        savePS.setInt(2, idVoo);
+        // Excecutamos o insert e, de seguida, libertamos o lock
+        savePS.executeUpdate();
+        reservaLock.unlock();
 
         try {
             return getIDReserva(r.getEmailUtilizador(), r.getPartida(), r.getDestino(), r.getDataVoo());
@@ -81,11 +104,20 @@ public class ReservasDAO implements IReservasDAO {
      */
     @Override
     public Reserva getReserva(String email, String partida, String destino, LocalDateTime dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
-        int idUtilizador = getUtilizadorID(email);
-        int idVoo = getVooID(partida, destino);
         Timestamp dataVooDate = Timestamp.valueOf(dataVoo);
+        // Obtemos todos os locks
+        userLock.lock();
+        vooLock.lock();
+        reservaLock.lock();
+        // Obtemos os ids e libertamos os locks
+        int idUtilizador = getUtilizadorID(email);
+        userLock.unlock();
+        int idVoo = getVooID(partida, destino);
+        vooLock.unlock();
+        // Obtemos a data de reserva e damos unlock
         Timestamp dataReserva = getDataReserva(idUtilizador, idVoo, dataVooDate);
-        
+        reservaLock.unlock();
+
         // Se chegamos aqui, então a partida, o destino, a dataVoo e a reserva são válidos,
         // visto que todos os métodos acima atiram as respetivas exceções caso algo
         // esteja mal. Por causa disso, não precisamos de os ir buscar a base de dados e podemos utilizar os
@@ -105,12 +137,32 @@ public class ReservasDAO implements IReservasDAO {
      */
     @Override
     public Reserva getReservaPorID(int id) throws SQLException, ReservaInexistenteException, UtilizadorInexistenteException, VooInexistenteException {
+        // Criamos todas as statements e preenchemos os
+        // campos que já podem ser preenchidos
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Reserva where idReserva = ?"
         );
         ps.setInt(1, id);
+
+        PreparedStatement userPS = conn.prepareStatement(
+                "select Email from Utilizador where idUtilizador = ?"
+        );
+
+        PreparedStatement vooPS = conn.prepareStatement(
+                "select Partida, Destino from Voo where idVoo = ?"
+        );
+
+        // Obtemos todos os locks
+        userLock.lock();
+        vooLock.lock();
+        reservaLock.lock();
+
+        // Executamos a query à tabela de Reserva e libertamos o lock
         ResultSet rs = ps.executeQuery();
+        reservaLock.unlock();
         if(!rs.next()) {
+            userLock.unlock();
+            vooLock.unlock();
             throw new ReservaInexistenteException();
         }
         int idUtilizador = rs.getInt("idUtilizador");
@@ -118,21 +170,20 @@ public class ReservasDAO implements IReservasDAO {
         LocalDateTime dataVoo = rs.getTimestamp("Data_Voo").toLocalDateTime();
         LocalDateTime dataReserva = rs.getTimestamp("Data_Reserva").toLocalDateTime();
 
-        ps = conn.prepareStatement(
-                "select Email from Utilizador where idUtilizador = ?"
-        );
-        ps.setInt(1, idUtilizador);
-        rs = ps.executeQuery();
+        // Obtemos o email do utilizador e libertamos o lock
+        userPS.setInt(1, idUtilizador);
+        rs = userPS.executeQuery();
+        userLock.unlock();
         if(!rs.next()) {
+            vooLock.unlock();
             throw new UtilizadorInexistenteException();
         }
         String email = rs.getString("Email");
 
-        ps = conn.prepareStatement(
-                "select Partida, Destino from Voo where idVoo = ?"
-        );
-        ps.setInt(1, idVoo);
-        rs = ps.executeQuery();
+        // Obtemos a partida e o destino do voo e libertamos o lock
+        vooPS.setInt(1, idVoo);
+        rs = vooPS.executeQuery();
+        vooLock.unlock();
         if(!rs.next()) {
             throw new VooInexistenteException();
         }
@@ -156,22 +207,33 @@ public class ReservasDAO implements IReservasDAO {
     public Map<Integer, Reserva> getTodasReservasUtilizador(String email) throws SQLException, UtilizadorInexistenteException, VooInexistenteException {
         Map<Integer, Reserva> reservas = new HashMap<>();
 
-        int idUtilizador = getUtilizadorID(email);
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Reserva where idUtilizador = ?"
         );
+        PreparedStatement vooPS = conn.prepareStatement(
+                "select Partida, Destino from Voo where idVoo = ?"
+        );
+
+        userLock.lock();
+        vooLock.lock();
+        reservaLock.lock();
+
+        int idUtilizador = getUtilizadorID(email);
+        userLock.unlock();
         ps.setInt(1, idUtilizador);
         ResultSet rs = ps.executeQuery();
+        reservaLock.unlock();
 
         while(rs.next()) {
+            // Obtemos a data do voo e da reserva
             LocalDateTime dataVoo = rs.getTimestamp("Data_Voo").toLocalDateTime();
             LocalDateTime dataReserva = rs.getTimestamp("Data_Reserva").toLocalDateTime();
-
             int idVoo = rs.getInt("idVoo");
-            ps = conn.prepareStatement("select Partida, Destino from Voo where idVoo = ?");
-            ps.setInt(1, idVoo);
-            ResultSet rs2 = ps.executeQuery();
+            // Colocamos o ID do voo na statement e fazemos a query
+            vooPS.setInt(1, idVoo);
+            ResultSet rs2 = vooPS.executeQuery();
             if(!rs2.next()) {
+                vooLock.unlock();
                 throw new VooInexistenteException();
             }
             String partida = rs2.getString("Partida");
@@ -179,6 +241,9 @@ public class ReservasDAO implements IReservasDAO {
 
             reservas.put(rs.getInt("idReserva"), new Reserva(email, partida, destino, dataVoo, dataReserva));
         }
+        // Infelizmente só podemos libertar este lock depois
+        // do ciclo while
+        vooLock.unlock();
 
         return reservas;
     }
@@ -197,22 +262,35 @@ public class ReservasDAO implements IReservasDAO {
      */
     @Override
     public void removeReserva(String email, String partida, String destino, LocalDateTime dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
-        int idUtilizador = getUtilizadorID(email);
-        int idVoo = getVooID(partida, destino);
         Timestamp dataVooTS = Timestamp.valueOf(dataVoo);
+
+        PreparedStatement ps = conn.prepareStatement(
+                "delete from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
+        );
+        ps.setTimestamp(3, dataVooTS);
+
+        // Obter os locks
+        userLock.lock();
+        vooLock.lock();
+        reservaLock.lock();
+
+        // Obter os ids e libertar os locks respetivos
+        int idUtilizador = getUtilizadorID(email);
+        userLock.lock();
+        int idVoo = getVooID(partida, destino);
+        vooLock.lock();
 
         // Aqui usamos a função getDataReserva só para 
         // verificar se a reserva existe. Nós não precisamos
         // do return para nada neste caso.
         getDataReserva(idUtilizador, idVoo, dataVooTS);
 
-        PreparedStatement ps = conn.prepareStatement(
-                "delete from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
-        );
+        // Preencher os campos que faltam e executar o update
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setTimestamp(3, dataVooTS);
         ps.executeUpdate();
+
+        reservaLock.unlock();
     }
 
     /**
@@ -261,6 +339,7 @@ public class ReservasDAO implements IReservasDAO {
         ps.setString(1, email);
         ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
+            userLock.unlock();
             throw new UtilizadorInexistenteException();
         }
 
@@ -286,6 +365,7 @@ public class ReservasDAO implements IReservasDAO {
         ps.setString(2, destino);
         ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
+            vooLock.unlock();
             throw new VooInexistenteException();
         }
 
@@ -308,19 +388,28 @@ public class ReservasDAO implements IReservasDAO {
      */
     @Override
     public int getIDReserva(String email, String partida, String destino, LocalDateTime data) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
-        int idUtilizador = getUtilizadorID(email);
-        int idVoo = getVooID(partida, destino);
-
         PreparedStatement ps = conn.prepareStatement(
                 "select idReserva from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
         );
+        ps.setTimestamp(3, Timestamp.valueOf(data));
+
+        userLock.lock();
+        vooLock.lock();
+        reservaLock.lock();
+
+        int idUtilizador = getUtilizadorID(email);
+        userLock.unlock();
+        int idVoo = getVooID(partida, destino);
+        vooLock.unlock();
+
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setTimestamp(3, Timestamp.valueOf(data));
         ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
+            reservaLock.unlock();
             throw new ReservaInexistenteException();
         }
+        reservaLock.unlock();
 
         return rs.getInt("idReserva");
     }
