@@ -1,14 +1,16 @@
 package uni.sd.data;
 
+import uni.sd.ln.server.ssutilizadores.utilizadores.Utilizador;
+import uni.sd.ln.server.ssvoos.voos.Voo;
+
 import java.util.Map;
 
-import uni.sd.ln.ssutilizadores.utilizadores.Utilizador;
-import uni.sd.ln.ssvoos.voos.Voo;
-
 public interface IDados {
-    public void saveUtilizadores(Map<String,Utilizador> us);
-    public Map<String,Utilizador> getUtilizadores();
+    void saveUtilizadores(Map<String, Utilizador> us);
 
-    public void saveVoos(Map<String,Voo> vs);
-    public Map<String,Voo> getVoos();
+    Map<String, Utilizador> getUtilizadores();
+
+    void saveVoos(Map<String, Voo> vs);
+
+    Map<String, Voo> getVoos();
 }

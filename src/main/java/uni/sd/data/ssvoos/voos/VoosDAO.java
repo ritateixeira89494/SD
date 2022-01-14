@@ -1,8 +1,8 @@
 package uni.sd.data.ssvoos.voos;
 
-import uni.sd.ln.ssvoos.exceptions.VooExisteException;
-import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
-import uni.sd.ln.ssvoos.voos.Voo;
+import uni.sd.ln.server.ssvoos.exceptions.VooExisteException;
+import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.ln.server.ssvoos.voos.Voo;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public class VoosDAO implements IVoosDAO{
     final Connection conn;
 
     public VoosDAO() throws SQLException {
-        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "root", "rootPass12345");
+        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "sd_user", "");
     }
 
     /**

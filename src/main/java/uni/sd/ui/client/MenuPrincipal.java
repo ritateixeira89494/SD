@@ -1,27 +1,21 @@
 package uni.sd.ui.client;
 
-import java.awt.event.ActionListener;
+import uni.sd.ln.client.ILN;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import java.awt.FlowLayout;
-import java.sql.SQLException;
-
-import uni.sd.ln.Iln;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 
 /**
- *  Menu principal do utilizador normal. Aqui estão todas os métodos
- *  que o utilizador pode executar. 
- * 
+ * Menu principal do utilizador normal. Aqui estão todas os métodos
+ * que o utilizador pode executar.
+ * <p>
  *  TODO: Acabar de adicionar os métodos.
  */
 public class MenuPrincipal extends JFrame {
-    public MenuPrincipal(Iln ln) {
+    public MenuPrincipal(ILN ln) {
         // Criar os paineis
         JPanel pConta = new JPanel();
         JPanel pVoo = new JPanel();
@@ -40,14 +34,14 @@ public class MenuPrincipal extends JFrame {
         // Criar os butões
         JButton logout = new JButton("Log Out");
         JButton obterVoos = new JButton("Lista de Voos");
-        
+
         // Adicionar as ações dos butões
         logout.addActionListener(new ActionListener() {
             /**
              *  Caso o utilizador carregue no butão de logout,
              *  criamos a janela de login e destruimos a janela
              *  do menú principal.
-             * 
+             *
              * @param event Este argumento tem de ser passado. 
              *              Nós aqui não o usamos.
              */
@@ -61,14 +55,14 @@ public class MenuPrincipal extends JFrame {
              * Caso o utilizador carregue no butão de obter lista de voos,
              * buscar a lista de voos à camada de lógica de negócios e 
              * criar uma nova janela de listagem de voos.
-             * 
+             *
              * @param event Este argumento tem de ser passado. 
              *              Nós aqui não o usamos.
              */
             public void actionPerformed(ActionEvent event) {
                 try {
                     new ListaVoos(ln.obterListaVoo());
-                } catch (SQLException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

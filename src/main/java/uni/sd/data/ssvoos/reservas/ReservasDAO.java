@@ -1,10 +1,10 @@
 package uni.sd.data.ssvoos.reservas;
 
-import uni.sd.ln.ssutilizadores.exceptions.UtilizadorInexistenteException;
-import uni.sd.ln.ssvoos.exceptions.ReservaExisteException;
-import uni.sd.ln.ssvoos.exceptions.ReservaInexistenteException;
-import uni.sd.ln.ssvoos.exceptions.VooInexistenteException;
-import uni.sd.ln.ssvoos.reservas.Reserva;
+import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.ReservaExisteException;
+import uni.sd.ln.server.ssvoos.exceptions.ReservaInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.ln.server.ssvoos.reservas.Reserva;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -15,7 +15,7 @@ public class ReservasDAO implements IReservasDAO {
     Connection conn;
 
     public ReservasDAO() throws SQLException {
-        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "root", "rootPass12345");
+        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "sd_user", "");
     }
 
     /**
@@ -114,7 +114,7 @@ public class ReservasDAO implements IReservasDAO {
             throw new ReservaInexistenteException();
         }
         int idUtilizador = rs.getInt("idUtilizador");
-        int idVoo = rs.getInt("idReserva");
+        int idVoo = rs.getInt("idVoo");
         LocalDate dataVoo = rs.getDate("Data_Voo").toLocalDate();
         LocalDate dataReserva = rs.getDate("Data_Reserva").toLocalDate();
 

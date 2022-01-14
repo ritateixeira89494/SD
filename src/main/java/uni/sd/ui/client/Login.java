@@ -6,21 +6,22 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import uni.sd.ln.Iln;
-import uni.sd.ln.ssutilizadores.exceptions.CredenciaisErradasException;
+import uni.sd.ln.client.ILN;
+import uni.sd.ln.server.ssutilizadores.exceptions.CredenciaisErradasException;
 
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 public class Login extends JFrame {
     /**
      *  Este construtor cria a janela e todas as caixas de texto/labels/botão
      *  necessários. Para além de os criar também trata dos tamanhos e posicionamento destes
      */
-    public Login(Iln ln) {
+    public Login(ILN ln) {
         // Criar o painel, botão de login e todas as caixas de texto e labels
         JPanel p = new JPanel(new GridBagLayout());
 
@@ -42,7 +43,7 @@ public class Login extends JFrame {
 
                 try {
                     // Se utilizador existir criar o menú principal e destruir esta janela
-                    if(ln.autenticar(username, password)) {
+                    if(ln.autenticar(username, password) != -1) {
                         new MenuPrincipal(ln);
                         dispose();
                     }
@@ -54,6 +55,8 @@ public class Login extends JFrame {
                     statusLabel.setText("Nome de utilizador ou palavra-passe incorreta.");
                     statusLabel.setVisible(true);
                     pack();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
