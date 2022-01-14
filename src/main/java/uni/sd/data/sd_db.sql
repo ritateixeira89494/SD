@@ -31,6 +31,8 @@ create table if not exists `sd_db`.`Voo` (
     `Partida` varchar(100) not null,
     `Destino` varchar(100) not null,
     `Capacidade` int not null,
+    `Ocupacao` int,
+    `Duracao` int not null,
     Primary Key (`idVoo`)
 )
 Engine = InnoDB;
@@ -39,8 +41,8 @@ CREATE TABLE IF NOT EXISTS `sd_db`.`Reserva` (
   `idReserva` INT UNSIGNED UNIQUE NOT NULL AUTO_INCREMENT,
   `idUtilizador` INT UNSIGNED NOT NULL,
   `idVoo` INT UNSIGNED NOT NULL,
-  `Data_Reserva` DATE NOT NULL,
-  `Data_Voo` DATE NOT NULL,
+  `Data_Reserva` DATETIME NOT NULL,
+  `Data_Voo` DATETIME NOT NULL,
   PRIMARY KEY (`idReserva`),
   INDEX `fk_Registo_Utilizador_idx` (`idUtilizador` ASC) VISIBLE,
   INDEX `fk_Reserva_Voo1_idx` (`idVoo` ASC) VISIBLE,

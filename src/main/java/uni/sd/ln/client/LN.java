@@ -9,7 +9,6 @@ import uni.sd.net.TipoMensagem;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -57,11 +56,11 @@ public class LN implements ILN {
     }
 
     @Override
-    public int reservarVoo(String partida, String destino, LocalDate data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+    public int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
         List<String> dados = new ArrayList<>();
         dados.add(partida);
         dados.add(destino);
-        dados.add(data.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        dados.add(data.format(DateTimeFormatter.ISO_DATE_TIME));
 
         tc.send(TipoMensagem.RESVOO, dados);
         Frame f = tc.receive();
@@ -98,11 +97,12 @@ public class LN implements ILN {
     }
 
     @Override
-    public void addInfo(String partida, String destino, int capacidade) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException {
+    public void addInfo(String partida, String destino, int capacidade, int duracao) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException {
         List<String> dados = new ArrayList<>();
         dados.add(partida);
         dados.add(destino);
         dados.add(capacidade + "");
+        dados.add(duracao + "");
 
         tc.send(TipoMensagem.ADDINFO, dados);
         Frame f = tc.receive();
@@ -137,10 +137,10 @@ public class LN implements ILN {
     }
 
     @Override
-    public void reservarVooPorPercurso(List<String> voos, LocalDate dataInicio, LocalDate dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
         List<String> dados = new ArrayList<>();
-        dados.add(dataInicio.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        dados.add(dataFim.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        dados.add(dataInicio.format(DateTimeFormatter.ISO_DATE_TIME));
+        dados.add(dataFim.format(DateTimeFormatter.ISO_DATE_TIME));
         dados.addAll(voos);
 
         tc.send(TipoMensagem.RESERVPERCURSO, dados);
@@ -168,8 +168,8 @@ public class LN implements ILN {
 
         List<String> dados = f.getDados();
         List<Voo> voos = new ArrayList<>();
-        for(int i = 0; i < dados.size(); i+=3) {
-            voos.add(new Voo(dados.get(i), dados.get(i+1), Integer.parseInt(dados.get(i+2))));
+        for(int i = 0; i < dados.size(); i+=5) {
+            voos.add(new Voo(dados.get(i), dados.get(i+1), Integer.parseInt(dados.get(i+2)), Integer.parseInt(dados.get(i+3)), Integer.parseInt(dados.get(i+4))));
         }
         return voos;
     }
@@ -185,8 +185,8 @@ public class LN implements ILN {
         List<String> respDados = f.getDados();
 
         List<Voo> voos = new ArrayList<>();
-        for(int i = 0; i < respDados.size(); i+=3) {
-            voos.add(new Voo(respDados.get(i), respDados.get(i+1), Integer.parseInt(respDados.get(i+2))));
+        for(int i = 0; i < respDados.size(); i+=5) {
+            voos.add(new Voo(respDados.get(i), respDados.get(i+1), Integer.parseInt(respDados.get(i+2)), Integer.parseInt(dados.get(i+3)), Integer.parseInt(dados.get(i+4))));
         }
 
         return voos;

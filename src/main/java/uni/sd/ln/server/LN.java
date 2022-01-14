@@ -9,7 +9,7 @@ import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class LN implements Iln {
@@ -31,7 +31,7 @@ public class LN implements Iln {
     }
 
     @Override
-    public int reservarVoo(String email, String partida, String destino, LocalDate data)
+    public int reservarVoo(String email, String partida, String destino, LocalDateTime data)
             throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException,
             ReservaInexistenteException {
         return vooFacade.reservarVoo(email, partida, destino, data);
@@ -43,9 +43,9 @@ public class LN implements Iln {
     }
 
     @Override
-    public void addInfo(String partida, String destino, int capacidade)
+    public void addInfo(String partida, String destino, int capacidade, int duracao)
             throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException {
-        vooFacade.addInfo(partida, destino, capacidade);
+        vooFacade.addInfo(partida, destino, capacidade, duracao);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class LN implements Iln {
     }
 
     @Override
-    public List<Integer> reservarVooPorPercurso(String email, List<String> voos, LocalDate dataInicio, LocalDate dataFim)
+    public List<Integer> reservarVooPorPercurso(String email, List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
             throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
         return vooFacade.reservarVooPorPercurso(email, voos, dataInicio, dataFim);
     }

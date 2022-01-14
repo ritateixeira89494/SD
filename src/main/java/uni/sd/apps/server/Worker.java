@@ -10,7 +10,7 @@ import uni.sd.net.TipoMensagem;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,7 @@ public class Worker implements Runnable {
     private final TaggedConnection tc;
     private final Iln ln;
     private String email;
+    private int authority;
 
     public Worker(TaggedConnection tc, Iln ln) {
         this.tc = tc;
@@ -79,10 +80,10 @@ public class Worker implements Runnable {
         String tipoResp;
         List<String> respDados = new ArrayList<>();
         try {
-            int authority = ln.autenticar(email, password);
+            this.authority = ln.autenticar(email, password);
             this.email = email;
             tipoResp = TipoMensagem.OK;
-            respDados.add(authority + "");
+            respDados.add(this.authority + "");
         } catch (CredenciaisErradasException e) {
             tipoResp = CredenciaisErradasException.Tipo;
         }
@@ -114,7 +115,7 @@ public class Worker implements Runnable {
     private void reservarVoo(List<String> dados) throws IOException, SQLException {
         String partida = dados.get(0);
         String destino = dados.get(1);
-        LocalDate data = LocalDate.parse(dados.get(2), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDateTime data = LocalDateTime.parse(dados.get(2), DateTimeFormatter.ISO_DATE_TIME);
 
         String tipoResp;
         List<String> respDados = new ArrayList<>();
@@ -155,11 +156,12 @@ public class Worker implements Runnable {
         String partida = dados.get(0);
         String destino = dados.get(1);
         int capacidade = Integer.parseInt(dados.get(2));
+        int duracao = Integer.parseInt(dados.get(3));
 
         String tipoResp;
         List<String> resposta = new ArrayList<>();
         try {
-            ln.addInfo(partida, destino, capacidade);
+            ln.addInfo(partida, destino, capacidade, duracao);
             tipoResp = TipoMensagem.OK;
         } catch (VooExisteException e) {
             tipoResp = VooExisteException.Tipo;
@@ -196,8 +198,8 @@ public class Worker implements Runnable {
     private void reservarVooPorPercurso(List<String> dados) throws IOException, SQLException {
         String tipoResp;
 
-        LocalDate dataInicio = LocalDate.parse(dados.get(0), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        LocalDate dataFim =  LocalDate.parse(dados.get(1), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDateTime dataInicio = LocalDateTime.parse(dados.get(0), DateTimeFormatter.ISO_DATE_TIME);
+        LocalDateTime dataFim =  LocalDateTime.parse(dados.get(1), DateTimeFormatter.ISO_DATE_TIME);
 
         List<String> pontos = new ArrayList<>();
         for(int i = 2; i < dados.size(); i++) {

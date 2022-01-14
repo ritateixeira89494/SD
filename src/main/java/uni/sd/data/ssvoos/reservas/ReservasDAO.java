@@ -8,6 +8,7 @@ import uni.sd.ln.server.ssvoos.reservas.Reserva;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,15 +35,15 @@ public class ReservasDAO implements IReservasDAO {
         int idUtilizador = getUtilizadorID(r.getEmailUtilizador());
         int idVoo = getVooID(r.getPartida(), r.getDestino());
 
-        java.sql.Date dataVoo = Date.valueOf(r.getDataVoo());
-        java.sql.Date dataReserva = Date.valueOf(r.getDataReserva());
+        Timestamp dataVoo = Timestamp.valueOf(r.getDataVoo());
+        Timestamp dataReserva = Timestamp.valueOf(r.getDataReserva());
 
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
         );
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setDate(3, dataVoo);
+        ps.setTimestamp(3, dataVoo);
         ResultSet rs = ps.executeQuery();
         if(rs.next()) {
             throw new ReservaExisteException();
@@ -54,8 +55,8 @@ public class ReservasDAO implements IReservasDAO {
 
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setDate(3, dataReserva);
-        ps.setDate(4, dataVoo);
+        ps.setTimestamp(3, dataReserva);
+        ps.setTimestamp(4, dataVoo);
         ps.executeUpdate();
 
         try {
@@ -80,17 +81,17 @@ public class ReservasDAO implements IReservasDAO {
      * @throws ReservaInexistenteException Caso a reserva não exista
      */
     @Override
-    public Reserva getReserva(String email, String partida, String destino, LocalDate dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
+    public Reserva getReserva(String email, String partida, String destino, LocalDateTime dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
         int idUtilizador = getUtilizadorID(email);
         int idVoo = getVooID(partida, destino);
-        java.sql.Date dataVooDate = java.sql.Date.valueOf(dataVoo);
-        java.sql.Date dataReserva = getDataReserva(idUtilizador, idVoo, dataVooDate);
+        Timestamp dataVooDate = Timestamp.valueOf(dataVoo);
+        Timestamp dataReserva = getDataReserva(idUtilizador, idVoo, dataVooDate);
         
         // Se chegamos aqui, então a partida, o destino, a dataVoo e a reserva são válidos,
         // visto que todos os métodos acima atiram as respetivas exceções caso algo
         // esteja mal. Por causa disso, não precisamos de os ir buscar a base de dados e podemos utilizar os
         // parâmetros passados.
-        return new Reserva(email, partida, destino, dataVoo, dataReserva.toLocalDate());
+        return new Reserva(email, partida, destino, dataVoo, dataReserva.toLocalDateTime());
     }
 
     /**
@@ -115,8 +116,8 @@ public class ReservasDAO implements IReservasDAO {
         }
         int idUtilizador = rs.getInt("idUtilizador");
         int idVoo = rs.getInt("idVoo");
-        LocalDate dataVoo = rs.getDate("Data_Voo").toLocalDate();
-        LocalDate dataReserva = rs.getDate("Data_Reserva").toLocalDate();
+        LocalDateTime dataVoo = rs.getTimestamp("Data_Voo").toLocalDateTime();
+        LocalDateTime dataReserva = rs.getTimestamp("Data_Reserva").toLocalDateTime();
 
         ps = conn.prepareStatement(
                 "select Email from Utilizador where idUtilizador = ?"
@@ -164,8 +165,8 @@ public class ReservasDAO implements IReservasDAO {
         ResultSet rs = ps.executeQuery();
 
         while(rs.next()) {
-            LocalDate dataVoo = rs.getDate("Data_Voo").toLocalDate();
-            LocalDate dataReserva = rs.getDate("Data_Reserva").toLocalDate();
+            LocalDateTime dataVoo = rs.getTimestamp("Data_Voo").toLocalDateTime();
+            LocalDateTime dataReserva = rs.getTimestamp("Data_Reserva").toLocalDateTime();
 
             int idVoo = rs.getInt("idVoo");
             ps = conn.prepareStatement("select Partida, Destino from Voo where idVoo = ?");
@@ -196,22 +197,22 @@ public class ReservasDAO implements IReservasDAO {
      * @throws ReservaInexistenteException Caso a reserva não exista
      */
     @Override
-    public void removeReserva(String email, String partida, String destino, LocalDate dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
+    public void removeReserva(String email, String partida, String destino, LocalDateTime dataVoo) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
         int idUtilizador = getUtilizadorID(email);
         int idVoo = getVooID(partida, destino);
-        java.sql.Date dataVooDate = Date.valueOf(dataVoo);
+        Timestamp dataVooTS = Timestamp.valueOf(dataVoo);
 
         // Aqui usamos a função getDataReserva só para 
         // verificar se a reserva existe. Nós não precisamos
         // do return para nada neste caso.
-        getDataReserva(idUtilizador, idVoo, dataVooDate);
+        getDataReserva(idUtilizador, idVoo, dataVooTS);
 
         PreparedStatement ps = conn.prepareStatement(
                 "delete from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
         );
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setDate(3, dataVooDate);
+        ps.setTimestamp(3, dataVooTS);
         ps.executeUpdate();
     }
 
@@ -229,19 +230,19 @@ public class ReservasDAO implements IReservasDAO {
      * @throws ReservaInexistenteException Caso a reserva não exista
      * @throws SQLException Caso haja algum problema com a base de dados
      */
-    private java.sql.Date getDataReserva(int idUtilizador, int idVoo, java.sql.Date dataVoo) throws ReservaInexistenteException, SQLException {
+    private Timestamp getDataReserva(int idUtilizador, int idVoo, Timestamp dataVoo) throws ReservaInexistenteException, SQLException {
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Reserva where idUtilizador = ? and idVoo = ? and Data_Voo = ?"
         );
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setDate(3, dataVoo);
+        ps.setTimestamp(3, dataVoo);
         ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
             throw new ReservaInexistenteException();
         }
 
-        return rs.getDate("Data_Reserva");
+        return rs.getTimestamp("Data_Reserva");
     }
 
     /**
@@ -307,7 +308,7 @@ public class ReservasDAO implements IReservasDAO {
      * @throws ReservaInexistenteException Caso a reserva não exista
      */
     @Override
-    public int getIDReserva(String email, String partida, String destino, LocalDate data) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
+    public int getIDReserva(String email, String partida, String destino, LocalDateTime data) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaInexistenteException {
         int idUtilizador = getUtilizadorID(email);
         int idVoo = getVooID(partida, destino);
 
@@ -316,7 +317,7 @@ public class ReservasDAO implements IReservasDAO {
         );
         ps.setInt(1, idUtilizador);
         ps.setInt(2, idVoo);
-        ps.setDate(3, java.sql.Date.valueOf(data));
+        ps.setTimestamp(3, Timestamp.valueOf(data));
         ResultSet rs = ps.executeQuery();
         if(!rs.next()) {
             throw new ReservaInexistenteException();

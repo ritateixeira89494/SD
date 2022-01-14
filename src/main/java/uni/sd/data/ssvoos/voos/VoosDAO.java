@@ -40,11 +40,13 @@ public class VoosDAO implements IVoosDAO{
         }
 
         ps = conn.prepareStatement(
-                "insert into Voo(Partida, Destino, Capacidade) values (?,?,?)"
+                "insert into Voo(Partida, Destino, Capacidade, Ocupacao, Duracao) values (?,?,?,?,?)"
         );
         ps.setString(1, v.getPartida());
         ps.setString(2, v.getDestino());
         ps.setInt(3, v.getCapacidade());
+        ps.setInt(4, v.getOcupacao());
+        ps.setInt(5, v.getDuracao());
         ps.executeUpdate();
     }
 
@@ -69,7 +71,13 @@ public class VoosDAO implements IVoosDAO{
             throw new VooInexistenteException();
         }
 
-        return new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
+        return new Voo(
+                rs.getString("Partida"),
+                rs.getString("Destino"),
+                rs.getInt("Capacidade"),
+                rs.getInt("Ocupacao"),
+                rs.getInt("Duracao")
+        );
     }
 
     /**
@@ -98,11 +106,22 @@ public class VoosDAO implements IVoosDAO{
 
         Map<String, Voo> voos = new HashMap<>();
 
-        Voo v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
+        Voo v = new Voo(
+                rs.getString("Partida"),
+                rs.getString("Destino"),
+                rs.getInt("Capacidade"),
+                rs.getInt("Ocupacao"),
+                rs.getInt("Duracao")
+        );
         voos.put(v.getDestino(), v);
 
         while(rs.next()) {
-            v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
+            v = new Voo(rs.getString("Partida"),
+                    rs.getString("Destino"),
+                    rs.getInt("Capacidade"),
+                    rs.getInt("Ocupacao"),
+                    rs.getInt("Duracao")
+            );
             voos.put(v.getDestino(), v);
         }
         
@@ -135,11 +154,23 @@ public class VoosDAO implements IVoosDAO{
 
         Map<String, Voo> voos = new HashMap<>();
 
-        Voo v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
+        Voo v = new Voo(
+                rs.getString("Partida"),
+                rs.getString("Destino"),
+                rs.getInt("Capacidade"),
+                rs.getInt("Ocupacao"),
+                rs.getInt("Duracao")
+        );
         voos.put(v.getPartida(), v);
 
         while(rs.next()) {
-            v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
+            v = new Voo(
+                    rs.getString("Partida"),
+                    rs.getString("Destino"),
+                    rs.getInt("Capacidade"),
+                    rs.getInt("Ocupacao"),
+                    rs.getInt("Duracao")
+            );
             voos.put(v.getPartida(), v);
         }
         
@@ -167,7 +198,7 @@ public class VoosDAO implements IVoosDAO{
         }
 
         ps = conn.prepareStatement(
-                "update Voo set Capacidade = ? where Partida = ? and Destino = ?"
+                "update Voo set Ocupacao = ? where Partida = ? and Destino = ?"
         );
         ps.setInt(1, v.getCapacidade());
         ps.setString(2, v.getPartida());
@@ -216,7 +247,13 @@ public class VoosDAO implements IVoosDAO{
 
         List<Voo> voos = new ArrayList<>();
         while(rs.next()) {
-            Voo v = new Voo(rs.getString("Partida"), rs.getString("Destino"), rs.getInt("Capacidade"));
+            Voo v = new Voo(
+                    rs.getString("Partida"),
+                    rs.getString("Destino"),
+                    rs.getInt("Capacidade"),
+                    rs.getInt("Ocupacao"),
+                    rs.getInt("Duracao")
+            );
             voos.add(v);
         }
 

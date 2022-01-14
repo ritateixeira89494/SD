@@ -8,7 +8,7 @@ import uni.sd.ln.server.ssvoos.reservas.Reserva;
 import uni.sd.ln.server.ssvoos.voos.Voo;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +31,10 @@ public class SSVooFacade implements ISSVoo {
      * @param data    Data do voo a reservar
      */
     @Override
-    public int reservarVoo(String email, String partida, String destino, LocalDate data) throws VooInexistenteException,
+    public int reservarVoo(String email, String partida, String destino, LocalDateTime data) throws VooInexistenteException,
             SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
         Voo v = vDAO.getVoo(partida, destino);
-        LocalDate dataNow = LocalDate.now();
+        LocalDateTime dataNow = LocalDateTime.now();
         Reserva r = new Reserva(email, partida, destino, data, dataNow);
         reservasDAO.saveReserva(r);
 
@@ -53,7 +53,7 @@ public class SSVooFacade implements ISSVoo {
         String email = r.getEmailUtilizador();
         String partida = r.getPartida();
         String destino = r.getDestino();
-        LocalDate data = r.getDataVoo();
+        LocalDateTime data = r.getDataVoo();
 
         reservasDAO.removeReserva(email, partida, destino, data);
     }
@@ -69,7 +69,7 @@ public class SSVooFacade implements ISSVoo {
      *                   TODO: Adicionar uma verificação para o nível de permissões do utilizador.
      */
     @Override
-    public void addInfo(String partida, String destino, int capacidade)
+    public void addInfo(String partida, String destino, int capacidade, int duracao)
             throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, SQLException {
         if (capacidade <= 0) {
             throw new CapacidadeInvalidaException("Capacidade: " + capacidade);
@@ -78,7 +78,7 @@ public class SSVooFacade implements ISSVoo {
             throw new PartidaDestinoIguaisException("Partida: " + partida + " | Destino: " + destino);
         }
 
-        Voo novoVoo = new Voo(partida, destino, capacidade);
+        Voo novoVoo = new Voo(partida, destino, capacidade, 0, duracao);
         vDAO.saveVoo(novoVoo);
     }
 
@@ -116,7 +116,7 @@ public class SSVooFacade implements ISSVoo {
      * @param dataFim    Limite superior da data de reserva
      */
     @Override
-    public List<Integer> reservarVooPorPercurso(String email, List<String> voos, LocalDate dataInicio, LocalDate dataFim)
+    public List<Integer> reservarVooPorPercurso(String email, List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
             throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
         // TODO EU ESTOU A PÔR A FAZER NOVA RESERVA COM INTERVALOS DE 1 DIA MAS NÃO ACHO BEM POR CAUSA DA DATA DE FIM
         List<Integer> res = new ArrayList<>();

@@ -1,15 +1,16 @@
 package uni.sd.ln.server.ssvoos.reservas;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Reserva {
     private final String emailUtilizador;
     private final String partida;
     private final String destino;
-    private final LocalDate dataVoo;
-    private final LocalDate dataReserva;
+    private final LocalDateTime dataVoo;
+    private final LocalDateTime dataReserva;
 
-    public Reserva(String emailUtilizador, String partida, String destino, LocalDate dataVoo, LocalDate dataReserva) {
+    public Reserva(String emailUtilizador, String partida, String destino, LocalDateTime dataVoo, LocalDateTime dataReserva) {
         this.emailUtilizador = emailUtilizador;
         this.partida = partida;
         this.destino = destino;
@@ -29,11 +30,11 @@ public class Reserva {
         return this.destino;
     }
 
-    public LocalDate getDataVoo() {
+    public LocalDateTime getDataVoo() {
         return this.dataVoo;
     }
 
-    public LocalDate getDataReserva() {
+    public LocalDateTime getDataReserva() {
         return this.dataReserva;
     }
 }
