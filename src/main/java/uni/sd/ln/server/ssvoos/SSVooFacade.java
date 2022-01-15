@@ -95,15 +95,19 @@ public class SSVooFacade implements ISSVoo {
     @Override
     public List<Integer> reservarVooPorPercurso(String email, List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
             throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
-        // TODO EU ESTOU A PÔR A FAZER NOVA RESERVA COM INTERVALOS DE 1 DIA MAS NÃO ACHO BEM POR CAUSA DA DATA DE FIM
         List<Integer> res = new ArrayList<>();
-        int hours = 0, i;
+        int i;
         for (i = 0; i < voos.size() - 1; i++) {
-            // tenho que ir buscar a duração
-            // data de início, não estou a atualizar
-            int idReserva = reservarVoo(email, voos.get(i), voos.get(i + 1), dataInicio.plusDays(1));
+            String novaPartida = voos.get(i);
+            String novoDestino = voos.get(i+1);
+            Voo v = daos.getVoo(novaPartida, novoDestino);
+            dataInicio = dataInicio.minusMinutes(v.getDuracao());
+            if(dataFim.isBefore(dataInicio)){
+                System.out.println("Não foi possível realizar a reserva com esse time frame.");
+                return null;
+            }
+            int idReserva = reservarVoo(email, novaPartida, novoDestino, dataInicio);
             res.add(idReserva);
-            hours += 12;
         }
         return res;
     }
@@ -118,18 +122,6 @@ public class SSVooFacade implements ISSVoo {
         return daos.getTodosVoos();
     }
 
-    /**
-     * Retorna uma lista com todos os percursos possíveis
-     * que começem em partida e acabem em destino
-     * com um máximo de 3 saltos.
-     *
-     * @param partida Local de partida
-     * @param destino Local de destino
-     * @return Lista com todos os caminhos possíveis começados em partida
-     * e acabados em destino com um máximo de 3 saltos
-     */
-
-
 
     static class Node {
         String cidade; // cidade da qual iremos partir
@@ -142,21 +134,34 @@ public class SSVooFacade implements ISSVoo {
         }
     }
 
+    /**
+     * Retorna uma lista com todos os percursos possíveis
+     * que começem em partida e acabem em destino
+     * com um máximo de 3 saltos.
+     *
+     * @param partida Local de partida
+     * @param destinoFinal Local de destino
+     * @return Lista com todos os caminhos possíveis começados em partida
+     * e acabados em destino com um máximo de 3 saltos
+     */
+
     @Override
     public List<List<String>> obterPercursosPossiveis(String partida, String destinoFinal) throws VooInexistenteException, SQLException {
         List<Node> caminho = new ArrayList<>();
         Node arv = new Node(partida, caminho);
 
         int saltos = 0;
-        preecherArvore(arv, partida, saltos);
+        arv = preecherArvore(arv, partida, saltos);
 
+        List<List<String>> res = new ArrayList<>();
+        guardarPercursosPossiveis(arv, res, destinoFinal);
 
-
-        return null;
+        return res;
     }
 
     public Node preecherArvore(Node arv, String partida, int saltos) throws VooInexistenteException, SQLException {
         //EU ACHO QUE ISTO ESTÁ BEM MAS NÃO TENHO A CERTEZA!!!!!!!!!!!
+        //QUANTO MAIS OLHO PARA ISTO, MAIS ERRADO PARECE
         arv.cidade = partida;
 
         Map<String, Voo> destinos = daos.getVooPorPartida(partida);
@@ -169,6 +174,30 @@ public class SSVooFacade implements ISSVoo {
         }
 
         return arv;
+    }
+
+
+    public List<List<String>> guardarPercursosPossiveis(Node arv, List<List<String>> res, String destinoFinal){
+        int count = 0;
+        List<String> umPercurso = new ArrayList<>();
+        for(int i = 0; i < arv.caminho.size(); i++){
+            umPercurso = guardarPercurso(arv, res.get(i), destinoFinal, count);
+            res.add(umPercurso);
+        }
+        return res;
+    }
+
+    public List<String> guardarPercurso(Node arv, List<String> percurso, String destinoFinal, int count){
+        if(percurso.size() < 4 && Objects.equals(arv.cidade, destinoFinal)){
+            percurso.add(arv.cidade);
+            return percurso;
+        }
+        else if(percurso.size() < 4){
+            percurso.add(arv.cidade);
+            count++;
+            guardarPercurso(arv.caminho.get(count), percurso, destinoFinal, count);
+        }
+        return null;
     }
 
 

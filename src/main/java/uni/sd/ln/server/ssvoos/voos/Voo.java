@@ -1,5 +1,7 @@
 package uni.sd.ln.server.ssvoos.voos;
 
+import java.time.temporal.TemporalAmount;
+
 public class Voo {
     private final String partida;
     private final String destino;
