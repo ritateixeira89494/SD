@@ -31,7 +31,7 @@ public class DadosDAO implements IDados {
     private final IReservasDAO rdao;
 
    public DadosDAO() throws SQLException {
-       Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "sd_user", "");
+       Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "root", "jackwolf272");
        Lock reservaLock = new ReentrantLock();
        Lock userLock = new ReentrantLock();
        Lock vooLock = new ReentrantLock();

@@ -13,7 +13,7 @@ import uni.sd.net.TaggedConnection;
 public class Server {
     public static void main(String[] args) throws IOException, SQLException {
         Iln ln = new LN(new DadosDAO());
-        int port = Integer.parseInt(args[0]);
+        int port = 12345;
         ServerSocket ss = new ServerSocket(port);
         try {
             while(true) {
