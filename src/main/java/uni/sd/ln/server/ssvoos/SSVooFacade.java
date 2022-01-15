@@ -150,10 +150,11 @@ public class SSVooFacade implements ISSVoo {
      * e acabados em destino com um máximo de 3 saltos
      */
     @Override
-    public List<Integer> obterPercursosPossiveis(String partida, String destino) {
+    public List<Integer> obterPercursosPossiveis(String partida, String destino) throws VooInexistenteException, SQLException {
         // TODO ACABAR MÉTODO
         List<Integer> res = new ArrayList<>();
 
+        Map<String, Voo> voosPartida = vDAO.getVooPorPartida(partida);
 
         return res;
     }
