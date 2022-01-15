@@ -8,13 +8,16 @@ import uni.sd.ln.server.ssutilizadores.utilizadores.Utilizador;
 import uni.sd.ln.server.ssutilizadores.utilizadores.UtilizadorNormal;
 
 import java.sql.*;
+import java.util.concurrent.locks.Lock;
 
 
 public class UtilizadoresDAO implements IUtilizadoresDAO{
     private final Connection conn;
+    private final Lock userLock;
 
-    public UtilizadoresDAO(Connection conn) throws SQLException {
+    public UtilizadoresDAO(Connection conn, Lock userLock) {
         this.conn = conn;
+        this.userLock = userLock;
     }
 
     /**
@@ -28,29 +31,45 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      */
     @Override
     public void saveUtilizador(Utilizador u) throws SQLException, UtilizadorExisteException {
+        /* Começamos por criar ambas as statements.
+         * Nós criamos a statement de inserção antes de fazermos
+         * qualquer query para que usemos o lock
+         * o mínimo de tempo possível.
+         */
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Utilizador where Email = ?"
         );
         ps.setString(1, u.getEmail());
-        ResultSet rs = ps.executeQuery();
-        if(rs.next()) {
-            throw new UtilizadorExisteException();
-        }
 
-        ps = conn.prepareStatement(
+        PreparedStatement savePS = conn.prepareStatement(
                 "insert into Utilizador(Email, Nome, Password, Tipo) value (?,?,?,?)"
         );
-        ps.setString(1, u.getEmail());
-        ps.setString(2, u.getUsername());
-        ps.setString(3, u.getPassword());
-        ps.setInt(4, u.getAuthority());
-        ps.executeUpdate();
+        savePS.setString(1, u.getEmail());
+        savePS.setString(2, u.getUsername());
+        savePS.setString(3, u.getPassword());
+        savePS.setInt(4, u.getAuthority());
 
-        if(u instanceof UtilizadorNormal) {
-            saveUtilizadorNormal((UtilizadorNormal) u);
-        } else if(u instanceof Administrador) {
-            saveAdministrador((Administrador) u);
+        // Aqui damos Lock para fazermos a query e se for o caso
+        // o insert na base de dados.
+        try{
+            userLock.lock();
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                throw new UtilizadorExisteException();
+            }
+            savePS.executeUpdate();
+
+            // Aqui inserimos o utilizador na respetiva tabela
+            // dependendo da sua classe
+            if(u instanceof UtilizadorNormal) {
+                saveUtilizadorNormal((UtilizadorNormal) u);
+            } else if(u instanceof Administrador) {
+                saveAdministrador((Administrador) u);
+            }
+        } finally {
+            userLock.unlock();
         }
+
     }
 
     /**
@@ -89,16 +108,25 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
     @Override
     public Utilizador getUtilizador(String email) throws UtilizadorInexistenteException, SQLException {
         Utilizador u;
+        ResultSet rs;
 
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Utilizador where Email = ?"
         );
         ps.setString(1, email);
-        ResultSet rs = ps.executeQuery();
+
+        // Damos lock para fazermos a query à base de dados
+        // e imediatamente a seguir podemos liberta-lo.
+        try {
+            userLock.lock();
+            rs = ps.executeQuery();
+        } finally {
+            userLock.unlock();
+        }
+
         if(!rs.next()) {
             throw new UtilizadorInexistenteException();
         }
-
         String nome = rs.getString("Nome");
         String password = rs.getString("Password");
         switch(rs.getInt("Tipo")) {
@@ -126,22 +154,36 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
      */
     @Override
     public void updateUtilizador(Utilizador u) throws SQLException, UtilizadorInexistenteException {
+        /*
+         * Tal como no método saveUtilizador,
+         * nós criamos ambas as statements antes
+         * de qualquer query/update à base de dados
+         * como forma de reduzir o tempo que cada thread
+         * usa o lock.
+         */
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Utilizador where Email = ?"
         );
         ps.setString(1, u.getEmail());
-        ResultSet rs = ps.executeQuery();
-        if(!rs.next()) {
-            throw new UtilizadorInexistenteException();
-        }
 
-        ps = conn.prepareStatement(
+        PreparedStatement updatePS = conn.prepareStatement(
                 "update Utilizador set Nome = ?, Password = ? where Email = ?"
         );
-        ps.setString(1, u.getUsername());
-        ps.setString(2, u.getPassword());
-        ps.setString(3, u.getEmail());
-        ps.executeUpdate();
+        updatePS.setString(1, u.getUsername());
+        updatePS.setString(2, u.getPassword());
+        updatePS.setString(3, u.getEmail());
+
+        // Lock para executar as queries
+        try {
+            userLock.lock();
+            ResultSet rs = ps.executeQuery();
+            if(!rs.next()) {
+                throw new UtilizadorInexistenteException();
+            }
+            updatePS.executeUpdate();
+        } finally {
+            userLock.unlock();
+        }
     }
 
     /**
@@ -158,35 +200,47 @@ public class UtilizadoresDAO implements IUtilizadoresDAO{
                 "select * from Utilizador where Email = ?"
         );
         ps.setString(1, email);
-        ResultSet rs = ps.executeQuery();
-        if(!rs.next()) {
-            throw new UtilizadorInexistenteException();
-        }
-        int tipo = rs.getInt("Tipo");
-        int idUtilizador = rs.getInt("idUtilizador");
 
-        ps = conn.prepareStatement(
+        PreparedStatement removePS = conn.prepareStatement(
                 "delete from Utilizador where Email = ?"
         );
-        ps.setString(1, email);
-        ps.executeUpdate();
+        removePS.setString(1, email);
 
-        switch (tipo) {
-            case UtilizadorNormal.AUTHORITY:
-                ps = conn.prepareStatement(
-                        "delete from UtilizadorNormal where idUtilizadorNormal = ?"
-                );
-                break;
-            case Administrador.AUTHORITY:
-                ps = conn.prepareStatement(
-                        "delete from Administrador where idAdministrador = ?"
-                );
-                break;
-            default:
-                System.out.println("WTF!! How did I get here!?");
+        /*
+         * Infelizmente quando removemos um utilizador temos
+         * que manter o lock para o removermos também da tabela
+         * da sua classe.
+         */
+        try {
+            userLock.lock();
+            ResultSet rs = ps.executeQuery();
+            if(!rs.next()) {
                 throw new UtilizadorInexistenteException();
+            }
+            int tipo = rs.getInt("Tipo");
+            int idUtilizador = rs.getInt("idUtilizador");
+
+            removePS.executeUpdate();
+
+            switch (tipo) {
+                case UtilizadorNormal.AUTHORITY:
+                    removePS = conn.prepareStatement(
+                            "delete from UtilizadorNormal where idUtilizadorNormal = ?"
+                    );
+                    break;
+                case Administrador.AUTHORITY:
+                    removePS = conn.prepareStatement(
+                            "delete from Administrador where idAdministrador = ?"
+                    );
+                    break;
+                default:
+                    System.out.println("WTF!! How did I get here!?");
+                    throw new UtilizadorInexistenteException();
+            }
+            removePS.setInt(1, idUtilizador);
+            removePS.executeUpdate();
+        } finally {
+            userLock.unlock();
         }
-        ps.setInt(1, idUtilizador);
-        ps.executeUpdate();
     }
 }

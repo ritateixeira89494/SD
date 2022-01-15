@@ -22,17 +22,23 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DadosDAO implements IDados {
-    private IUtilizadoresDAO udao;
-    private IVoosDAO vdao;
-    private IReservasDAO rdao;
+    private final IUtilizadoresDAO udao;
+    private final IVoosDAO vdao;
+    private final IReservasDAO rdao;
 
    public DadosDAO() throws SQLException {
        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "sd_user", "");
-       udao = new UtilizadoresDAO(conn);
-       vdao = new VoosDAO(conn);
-       rdao = new ReservasDAO(conn);
+       Lock reservaLock = new ReentrantLock();
+       Lock userLock = new ReentrantLock();
+       Lock vooLock = new ReentrantLock();
+
+       udao = new UtilizadoresDAO(conn, userLock);
+       vdao = new VoosDAO(conn, vooLock);
+       rdao = new ReservasDAO(conn, reservaLock, userLock, vooLock);
    }
 
    // Métodos do IUtilizadoresDAO

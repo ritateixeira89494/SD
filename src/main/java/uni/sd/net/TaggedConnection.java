@@ -25,14 +25,10 @@ public class TaggedConnection implements AutoCloseable {
     public void send(Frame f) throws IOException {
         wLock.lock();
         try {
-            byte[] tipoArr = f.getTipo().getBytes(StandardCharsets.UTF_8);
-            dos.writeInt(tipoArr.length);
-            dos.write(tipoArr);
+            dos.writeUTF(f.getTipo());
             dos.writeInt(f.getDados().size());
             for(String s: f.getDados()) {
-                byte[] array = s.getBytes(StandardCharsets.UTF_8);
-                dos.writeInt(array.length);
-                dos.write(array);
+                dos.writeUTF(s);
             }
             dos.flush();
         } finally {
@@ -47,18 +43,13 @@ public class TaggedConnection implements AutoCloseable {
     public Frame receive() throws IOException {
         rLock.lock();
         try {
-            int tipoSize = dis.readInt();
-            byte[] tipoArr = new byte[tipoSize];
-            dis.readFully(tipoArr);
-            String tipo = new String(tipoArr);
+            String tipo = dis.readUTF();
 
             int dadosSize = dis.readInt();
             List<String> dados = new ArrayList<>();
             for(int i = 0; i < dadosSize; i++) {
-                int arraySize = dis.readInt();
-                byte[] array = new byte[arraySize];
-                dis.readFully(array);
-                dados.add(new String(array));
+                String s = dis.readUTF();
+                dados.add(s);
             }
             return new Frame(tipo, dados);
         } finally {

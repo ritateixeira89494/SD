@@ -9,12 +9,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 public class VoosDAO implements IVoosDAO{
-    final Connection conn;
+    private final Connection conn;
+    private final Lock vooLock;
 
-    public VoosDAO(Connection conn) throws SQLException {
+    public VoosDAO(Connection conn, Lock vooLock) {
         this.conn = conn;
+        this.vooLock = vooLock;
     }
 
     /**
@@ -29,25 +32,36 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public void saveVoo(Voo v) throws SQLException, VooExisteException {
+        /*
+         * Criamos as statements antes de darmos lock
+         * para reduzir o tempo que usamos o lock.
+         */
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Voo where Partida = ? and Destino = ?"
         );
         ps.setString(1, v.getPartida());
         ps.setString(2, v.getDestino());
-        ResultSet rs = ps.executeQuery();
-        if(rs.next()) {
-            throw new VooExisteException();
-        }
 
-        ps = conn.prepareStatement(
+        PreparedStatement savePS = conn.prepareStatement(
                 "insert into Voo(Partida, Destino, Capacidade, Ocupacao, Duracao) values (?,?,?,?,?)"
         );
-        ps.setString(1, v.getPartida());
-        ps.setString(2, v.getDestino());
-        ps.setInt(3, v.getCapacidade());
-        ps.setInt(4, v.getOcupacao());
-        ps.setInt(5, v.getDuracao());
-        ps.executeUpdate();
+        savePS.setString(1, v.getPartida());
+        savePS.setString(2, v.getDestino());
+        savePS.setInt(3, v.getCapacidade());
+        savePS.setInt(4, v.getOcupacao());
+        savePS.setInt(5, v.getDuracao());
+
+        vooLock.lock();
+        try {
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                throw new VooExisteException();
+            }
+
+            savePS.executeUpdate();
+        } finally {
+            vooLock.unlock();
+        }
     }
 
     /**
@@ -61,12 +75,21 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public Voo getVoo(String partida, String destino) throws SQLException, VooInexistenteException {
+        ResultSet rs;
+
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Voo where Partida = ? and Destino = ?"
         );
         ps.setString(1, partida);
         ps.setString(2, destino);
-        ResultSet rs = ps.executeQuery();
+
+        vooLock.lock();
+        try {
+            rs = ps.executeQuery();
+        } finally {
+            vooLock.unlock();
+        }
+        // Caso rs.next() seja null, o voo não existe
         if(!rs.next()) {
             throw new VooInexistenteException();
         }
@@ -95,17 +118,24 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public Map<String, Voo> getVooPorPartida(String partida) throws SQLException, VooInexistenteException {
+        ResultSet rs;
+
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Voo where Partida = ?"
         );
         ps.setString(1, partida);
-        ResultSet rs = ps.executeQuery();
+
+        vooLock.lock();
+        try {
+            rs = ps.executeQuery();
+        } finally {
+            vooLock.unlock();
+        }
         if(!rs.next()) {
             throw new VooInexistenteException();
         }
 
         Map<String, Voo> voos = new HashMap<>();
-
         Voo v = new Voo(
                 rs.getString("Partida"),
                 rs.getString("Destino"),
@@ -143,17 +173,24 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public Map<String, Voo> getVooPorDestino(String destino) throws SQLException, VooInexistenteException {
+        ResultSet rs;
+
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Voo where Destino = ?"
         );
         ps.setString(1, destino);
-        ResultSet rs = ps.executeQuery();
+
+        vooLock.lock();
+        try {
+            rs  = ps.executeQuery();
+        } finally {
+            vooLock.unlock();
+        }
         if(!rs.next()) {
             throw new VooInexistenteException();
         }
 
         Map<String, Voo> voos = new HashMap<>();
-
         Voo v = new Voo(
                 rs.getString("Partida"),
                 rs.getString("Destino"),
@@ -187,23 +224,31 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public void updateVoo(Voo v) throws SQLException, VooInexistenteException  {
+        ResultSet rs;
+
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Voo where Partida = ? and Destino = ?"
         );
         ps.setString(1, v.getPartida());
         ps.setString(2, v.getDestino());
-        ResultSet rs = ps.executeQuery();
-        if(!rs.next()) {
-            throw new VooInexistenteException();
-        }
 
-        ps = conn.prepareStatement(
+        PreparedStatement updatePS = conn.prepareStatement(
                 "update Voo set Ocupacao = ? where Partida = ? and Destino = ?"
         );
-        ps.setInt(1, v.getCapacidade());
-        ps.setString(2, v.getPartida());
-        ps.setString(3, v.getDestino());
-        ps.executeUpdate();
+        updatePS.setInt(1, v.getCapacidade());
+        updatePS.setString(2, v.getPartida());
+        updatePS.setString(3, v.getDestino());
+
+        vooLock.lock();
+        try {
+            rs = ps.executeQuery();
+            if(!rs.next()) {
+                throw new VooInexistenteException();
+            }
+            updatePS.executeUpdate();
+        } finally {
+            vooLock.unlock();
+        }
     }
 
     /**
@@ -216,22 +261,30 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public void removeVoo(String partida, String destino) throws SQLException, VooInexistenteException {
+        ResultSet rs;
+
         PreparedStatement ps = conn.prepareStatement(
                 "select * from Voo where Partida = ? and Destino = ?"
         );
         ps.setString(1, partida);
         ps.setString(2, destino);
-        ResultSet rs = ps.executeQuery();
-        if(!rs.next()) {
-            throw new VooInexistenteException();
-        }
 
-        ps = conn.prepareStatement(
+        PreparedStatement removePS = conn.prepareStatement(
                 "delete from Voo where Partida = ? and Destino = ?"
         );
-        ps.setString(1, partida);
-        ps.setString(2, destino);
-        ps.executeUpdate();
+        removePS.setString(1, partida);
+        removePS.setString(2, destino);
+
+        vooLock.lock();
+        try {
+            rs = ps.executeQuery();
+            if(!rs.next()) {
+                throw new VooInexistenteException();
+            }
+            removePS.executeUpdate();
+        } finally {
+            vooLock.unlock();
+        }
     }
 
     /**
@@ -242,9 +295,15 @@ public class VoosDAO implements IVoosDAO{
      */
     @Override
     public List<Voo> getTodosVoos() throws SQLException {
+        ResultSet rs;
         PreparedStatement ps = conn.prepareStatement("select * from Voo");
-        ResultSet rs = ps.executeQuery();
 
+        vooLock.lock();
+        try {
+            rs = ps.executeQuery();
+        } finally {
+            vooLock.unlock();
+        }
         List<Voo> voos = new ArrayList<>();
         while(rs.next()) {
             Voo v = new Voo(
