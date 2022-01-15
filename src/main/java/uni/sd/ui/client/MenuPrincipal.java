@@ -6,7 +6,6 @@ import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.utils.Pair;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,32 +13,20 @@ import java.util.List;
 import java.util.Scanner;
 
 public class MenuPrincipal {
-    // O model tem a 'lógica de negócio'.
     private final ILN model;
-
-    // Scanner para leitura
     private final Scanner scin;
 
-    /**
-     * Construtor.
-     * <p>
-     * Cria os menus e a camada de negócio.
-     */
     public MenuPrincipal() throws IOException {
-
         this.model = new LN();
         scin = new Scanner(System.in);
     }
 
-    /**
-     * Executa o menu principal e invoca o método correspondente à opção seleccionada.
-     */
     public void run() throws IOException {
         System.out.println("Bem vindo!");
 
         Menu menu = new Menu(new String[]{
-            "Entrar no sistema, usando credenciais ",
-            "Registrar novos utilizadores"
+            "Entrar no sistema, usando credenciais",
+            "Registrar novo utilizador"
         });
         menu.setHandler(1, this::login);
         menu.setHandler(2, this::registar);
@@ -52,10 +39,12 @@ public class MenuPrincipal {
     private void login() throws IOException {
         System.out.println("Email : ");
         String email = scin.nextLine();
+        System.out.println();
         System.out.println("Password : ");
         String password = scin.nextLine();
+        System.out.println();
         try {
-            Pair<String, Integer> info = model.autenticar(username,password);
+            Pair<String, Integer> info = model.autenticar(email,password);
             redirecionarMenu(info.getLeft(), info.getRight());
         } catch (CredenciaisErradasException e) {
             System.out.println();
@@ -149,6 +138,7 @@ public class MenuPrincipal {
     private void cancelarVoo() throws IOException {
         System.out.println("ID da viagem : ");
         String id = scin.nextLine();
+        System.out.println();
         try {
             model.cancelarVoo(Integer.parseInt(id));
             System.out.println("O voo foi cancelado com sucesso");
@@ -167,10 +157,13 @@ public class MenuPrincipal {
     private void reservarVooPorPercurso() throws IOException {
         System.out.println("Indique aqui os voos que deseja realizar, separadas por vírgulas : ");
         List<String> localizacoes = List.of((scin.nextLine()).split(","));
+        System.out.println();
         System.out.println("Hora de início : ");
         LocalDateTime start = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+        System.out.println();
         System.out.println("Hora de fim : ");
         LocalDateTime finish = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+        System.out.println();
         try {
             model.reservarVooPorPercurso(localizacoes,start,finish);
             System.out.println("Os voos foram reservados com sucesso");
@@ -197,7 +190,6 @@ public class MenuPrincipal {
 
     private void obterListaVoo() throws IOException {
         List<Voo> voos = model.obterListaVoo();
-
         for(Voo v: voos) {
             System.out.println(
                     "Partida: " + v.getPartida() + " " +
@@ -212,8 +204,10 @@ public class MenuPrincipal {
     private void obterPercursosPossiveis() throws IOException {
         System.out.println("Indique aqui a origem do voo : ");
         String origem = scin.nextLine();
+        System.out.println();
         System.out.println("Indique aqui o destino do voo : ");
         String destino = scin.nextLine();
+        System.out.println();
         model.obterPercursosPossiveis(origem,destino);
     }
 
@@ -236,12 +230,16 @@ public class MenuPrincipal {
     private void addInfo() throws IOException {
         System.out.println("Origem do voo : ");
         String origem = scin.nextLine();
+        System.out.println();
         System.out.println("Destino do voo : ");
         String destino = scin.nextLine();
+        System.out.println();
         System.out.println("Quantos passageiros podem ir no voo? : ");
         int passa = Integer.parseInt(scin.nextLine());
+        System.out.println();
         System.out.println("Quanto tempo dura o voo? : ");
         int duracao = Integer.parseInt(scin.nextLine());
+        System.out.println();
         try {
             model.addInfo(origem,destino,passa,duracao);
             System.out.println("Informação sobre voo adicionada com sucesso");
