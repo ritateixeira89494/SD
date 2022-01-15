@@ -7,6 +7,7 @@ import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssutilizadores.utilizadores.Administrador;
 import uni.sd.ln.server.ssutilizadores.utilizadores.Utilizador;
 import uni.sd.ln.server.ssutilizadores.utilizadores.UtilizadorNormal;
+import uni.sd.utils.Pair;
 
 public class SSUtilizadorFacade implements ISSUtilizador {
     IDados daos;
@@ -24,13 +25,13 @@ public class SSUtilizadorFacade implements ISSUtilizador {
      * atira a CredenciaisErradasException.
      */
     @Override
-    public int autenticar(String email, String password) throws CredenciaisErradasException, SQLException {
+    public Pair<String, Integer> autenticar(String email, String password) throws CredenciaisErradasException, SQLException {
         try {
             Utilizador user = daos.getUtilizador(email);
             if(!user.getPassword().equals(password)) {
                 throw new CredenciaisErradasException("Password Errada!");
             }
-            return user.getAuthority();
+            return new Pair<>(user.getUsername(), user.getAuthority());
         } catch (UtilizadorInexistenteException e) {
             throw new CredenciaisErradasException();
         }

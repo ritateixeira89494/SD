@@ -1,11 +1,12 @@
 package uni.sd.ui.client;
 
-import uni.sd.data.ssutilizadores.UtilizadoresDAO;
-import uni.sd.data.ssutilizadores.IUtilizadoresDAO;
 import uni.sd.ln.client.ILN;
 import uni.sd.ln.client.LN;
 import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssvoos.exceptions.*;
+import uni.sd.ln.server.ssvoos.voos.Voo;
+import uni.sd.utils.Pair;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,13 +34,12 @@ public class MenuPrincipal {
     /**
      * Executa o menu principal e invoca o método correspondente à opção seleccionada.
      */
-    public void run() {
+    public void run() throws IOException {
         System.out.println("Bem vindo!");
 
         Menu menu = new Menu(new String[]{
             "Entrar no sistema, usando credenciais ",
-            "Registrar novos utilizadores",
-            "Sair do sistema"
+            "Registrar novos utilizadores"
         });
         menu.setHandler(1, this::login);
         menu.setHandler(2, this::registar);
@@ -55,22 +55,21 @@ public class MenuPrincipal {
         System.out.println("Password : ");
         String password = scin.nextLine();
         try {
-            int authority = model.autenticar(email,password);
-            System.out.println("Bem vindo " + );
-            redirecionarMenu(authority);
+            Pair<String, Integer> info = model.autenticar(username,password);
+            redirecionarMenu(info.getLeft(), info.getRight());
         } catch (CredenciaisErradasException e) {
             System.out.println();
             System.out.println("As credenciais encontram-se incorretas");
         }
     }
 
-    private void redirecionarMenu(int authority) {
+    private void redirecionarMenu(String username, int authority) throws IOException {
         switch (authority) {
             case 1:
-                menuPrincipalAdministrador();
+                menuPrincipalAdministrador(username);
                 break;
             case 0:
-                menuPrincipalNormal();
+                menuPrincipalNormal(username);
                 break;
         }
     }
@@ -98,7 +97,9 @@ public class MenuPrincipal {
         }
     }
 
-    private void menuPrincipalNormal() {
+    private void menuPrincipalNormal(String username) throws IOException {
+        System.out.println("----------------------------");
+        System.out.println("Bem vindo " + username);
         Menu menu = new Menu(new String[]{
                 "Fazer uma reserva de voo",
                 "Cancelar uma das reservas de voo",
@@ -123,8 +124,8 @@ public class MenuPrincipal {
         System.out.println("Destino : ");
         String destino = scin.nextLine();
         System.out.println();
-        System.out.println("Data do voo : ");
-        LocalDateTime dia = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm"));
+        System.out.println("Data do voo : (Formato: dd-MM-yyyy HH:mm)");
+        LocalDateTime dia = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
         try {
             int id = model.reservarVoo(origem,destino,dia);
             System.out.println("Voo reservado com sucesso");
@@ -167,9 +168,9 @@ public class MenuPrincipal {
         System.out.println("Indique aqui os voos que deseja realizar, separadas por vírgulas : ");
         List<String> localizacoes = List.of((scin.nextLine()).split(","));
         System.out.println("Hora de início : ");
-        LocalDateTime start = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm"));
+        LocalDateTime start = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
         System.out.println("Hora de fim : ");
-        LocalDateTime finish = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm"));
+        LocalDateTime finish = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
         try {
             model.reservarVooPorPercurso(localizacoes,start,finish);
             System.out.println("Os voos foram reservados com sucesso");
@@ -195,7 +196,17 @@ public class MenuPrincipal {
     }
 
     private void obterListaVoo() throws IOException {
-        model.obterListaVoo();
+        List<Voo> voos = model.obterListaVoo();
+
+        for(Voo v: voos) {
+            System.out.println(
+                    "Partida: " + v.getPartida() + " " +
+                            "Destino: " + v.getDestino() + " " +
+                            "Capacidade: " + v.getCapacidade() + " " +
+                            "Ocupação: " + v.getOcupacao() + " " +
+                            "Duração: " + v.getOcupacao()
+                    );
+        }
     }
 
     private void obterPercursosPossiveis() throws IOException {
@@ -206,7 +217,9 @@ public class MenuPrincipal {
         model.obterPercursosPossiveis(origem,destino);
     }
 
-    private void menuPrincipalAdministrador() {
+    private void menuPrincipalAdministrador(String username) throws IOException {
+        System.out.println("----------------------------");
+        System.out.println("Bem vindo " + username);
         Menu menu = new Menu(new String[]{
                 "Adicionar informação sobre um novo voo",
                 "Encerrar o dia, não permitindo novas reservas",

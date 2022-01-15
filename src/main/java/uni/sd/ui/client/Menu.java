@@ -127,7 +127,7 @@ public class Menu {
     /**
      * Correr o menu uma vez.
      */
-    public void runOnce() {
+    public void runOnce() throws IOException {
         int op;
         show();
         op = readOption();
@@ -145,7 +145,7 @@ public class Menu {
      *
      * Termina com a opção 0 (zero).
      */
-    public void run() {
+    public void run() throws IOException {
         int op;
         do {
             show();
