@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class SSVooFacade implements ISSVoo {
@@ -151,58 +152,64 @@ public class SSVooFacade implements ISSVoo {
      * e acabados em destino com um máximo de 3 saltos
      */
 
-    static class Node {
-        String data;
-
-        // List of children
-        Node children[];
-
-        Node(int n, String data)
-        {
-            children = new Node[n];
-            this.data = data;
-        }
-    }
+    /*
+    Tenho uma classe recursiva. Ela tem tipo:
+esta cidade
+Esta cidade é o destino (bool)
+Lista de classes recursivas
+Essa lista de classes recursivas é chamar recursivamente a função, para as cidades que saiem da cidade atual
+Então tenho os voos: A->B, A->Destino, B->Destino
+Quero saber os caminhos entre A e Dest
+Nível == 0, return null;
+else:
+   Chamo a função recursivamente, descendo um nível, para cada cidade a que estou ligado
+   O resultado não é null; insiro à cidade atual essa informação
+   Essa cidade de destino atual é o destino que queremos?, Sim -> acrescentamos à classe recursiva
+Se for null, quer dizer que não há conexão
+     */
 
     @Override
     public List<List<String>> obterPercursosPossiveis(String partida, String destino) throws VooInexistenteException, SQLException {
-        int n = 4;
-        Node root = new Node(n, partida);
 
-        int i = 0;
-
-        Map<String, Voo> destinos = daos.getVooPorPartida(partida);
-        for (String dest : destinos.keySet()){
-            root.children[i] = new Node(n, dest);
-            i++;
-        }
-
-        root = preencherFilhos(root, i);
-
-        // TODO AGORA TENHO QUE PERCORRER A ÁRVORE MAS... COMO?
-        List<String> res = new ArrayList<String>();
-
-
-
-        for(int l = 0; l < 4; l++){
-
-        }
 
         return null;
     }
 
+    public List<List<String>> trying(String partida, String destinoFinal) throws VooInexistenteException, SQLException {
+        List<List<String>> res = new ArrayList<>();
 
-    public Node preencherFilhos(Node root, int i) throws VooInexistenteException, SQLException {
-        // TODO COMO É QUE METO ISTO RECURSIVO?? PARA JÁ SÓ ESTÁ A FAZER PARA O PRIMEIRO SALTO...
-        int j;
-        for(j = 0; j < i; j++) {
-            Map<String, Voo> novosDestinos = daos.getVooPorPartida(String.valueOf(root.children[j]));
-            for (String novoDest : novosDestinos.keySet()) {
-                root.children[j].children[0] = new Node(4, novoDest);
+        Map<String, Voo> destinos = daos.getVooPorPartida(partida);
+        List<String> string = new ArrayList<>();
+        string.add(partida);
+        for(String dest : destinos.keySet()){
+            if(Objects.equals(dest, destinoFinal)){
+                string.add(dest);
+            }
+            else {
+                string = trying2(string, dest, destinoFinal);
+                //Vou continuar depois mas aqui só a estou a chamar para a primeira camada
+                //Tenho a sensação que não está bem
+                //mas tanta recursividade fritou-me o cérebro...
             }
         }
 
-        return root;
+        return res;
+    }
+
+    public List<String> trying2(List<String> list, String destino, String destinoFinal){
+        if(Objects.equals(destino, destinoFinal)){
+            list.add(destino);
+            return list;
+        }
+        else {
+            list.add(destino);
+            //Aqui sei que é suposto fazer a recursividade com um nova destino
+            // mas como obtenho esse novo destino????
+            destino = "Porto";
+            trying2(list, destino, destinoFinal);
+        }
+
+        return list;
     }
 
 }
