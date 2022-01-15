@@ -6,6 +6,7 @@ import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.net.Frame;
 import uni.sd.net.TaggedConnection;
 import uni.sd.net.TipoMensagem;
+import uni.sd.utils.Pair;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -22,7 +23,7 @@ public class LN implements ILN {
     }
 
     @Override
-    public int autenticar(String email, String password) throws CredenciaisErradasException, IOException {
+    public Pair<String, Integer> autenticar(String email, String password) throws CredenciaisErradasException, IOException {
         List<String> dados = new ArrayList<>();
         dados.add(email);
         dados.add(password);
@@ -32,7 +33,10 @@ public class LN implements ILN {
         if(respostaFrame.getTipo().equals(CredenciaisErradasException.Tipo)) {
             throw new CredenciaisErradasException();
         }
-        return Integer.parseInt(respostaFrame.getDados().get(0));
+        String username = respostaFrame.getDados().get(0);
+        int authority = Integer.parseInt(respostaFrame.getDados().get(1));
+
+        return new Pair<>(username, authority);
     }
 
     @Override

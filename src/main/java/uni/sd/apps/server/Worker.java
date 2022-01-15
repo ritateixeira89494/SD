@@ -7,6 +7,7 @@ import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.net.Frame;
 import uni.sd.net.TaggedConnection;
 import uni.sd.net.TipoMensagem;
+import uni.sd.utils.Pair;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -80,9 +81,11 @@ public class Worker implements Runnable {
         String tipoResp;
         List<String> respDados = new ArrayList<>();
         try {
-            this.authority = ln.autenticar(email, password);
+            Pair<String, Integer> info = ln.autenticar(email, password);
             this.email = email;
+            this.authority = info.getRight();
             tipoResp = TipoMensagem.OK;
+            respDados.add(info.getLeft());
             respDados.add(this.authority + "");
         } catch (CredenciaisErradasException e) {
             tipoResp = CredenciaisErradasException.Tipo;

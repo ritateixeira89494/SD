@@ -8,6 +8,7 @@ import uni.sd.ln.server.ssvoos.ISSVoo;
 import uni.sd.ln.server.ssvoos.SSVooFacade;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
+import uni.sd.utils.Pair;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -23,7 +24,7 @@ public class LN implements Iln {
     }
 
     @Override
-    public int autenticar(String username, String password) throws CredenciaisErradasException, SQLException, UtilizadorInexistenteException {
+    public Pair<String, Integer> autenticar(String username, String password) throws CredenciaisErradasException, SQLException, UtilizadorInexistenteException {
         return userFacade.autenticar(username, password);
     }
 

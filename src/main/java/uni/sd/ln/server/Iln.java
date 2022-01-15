@@ -3,13 +3,14 @@ package uni.sd.ln.server;
 import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
+import uni.sd.utils.Pair;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface Iln {
-    int autenticar(String username, String password) throws CredenciaisErradasException, SQLException, UtilizadorInexistenteException;
+    Pair<String, Integer> autenticar(String username, String password) throws CredenciaisErradasException, SQLException, UtilizadorInexistenteException;
 
     void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, SQLException;

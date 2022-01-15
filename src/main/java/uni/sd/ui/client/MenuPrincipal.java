@@ -5,6 +5,7 @@ import uni.sd.ln.client.LN;
 import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
+import uni.sd.utils.Pair;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -53,20 +54,20 @@ public class MenuPrincipal {
         System.out.println("Password : ");
         String password = scin.nextLine();
         try {
-            int authority = model.autenticar(username,password);
-            redirecionarMenu(authority);
+            Pair<String, Integer> info = model.autenticar(username,password);
+            redirecionarMenu(info.getLeft(), info.getRight());
         } catch (CredenciaisErradasException e) {
             System.out.println("As credenciais encontram-se incorretas");
         }
     }
 
-    private void redirecionarMenu(int authority) throws IOException {
+    private void redirecionarMenu(String username, int authority) throws IOException {
         switch (authority) {
             case 1:
-                menuPrincipalAdministrador();
+                menuPrincipalAdministrador(username);
                 break;
             case 0:
-                menuPrincipalNormal();
+                menuPrincipalNormal(username);
                 break;
         }
     }
@@ -91,7 +92,9 @@ public class MenuPrincipal {
         }
     }
 
-    private void menuPrincipalNormal() throws IOException {
+    private void menuPrincipalNormal(String username) throws IOException {
+        System.out.println("----------------------------");
+        System.out.println("Bem vindo " + username);
         Menu menu = new Menu(new String[]{
                 "Fazer uma reserva de voo",
                 "Cancelar uma das reservas de voo",
@@ -189,7 +192,9 @@ public class MenuPrincipal {
         model.obterPercursosPossiveis(origem,destino);
     }
 
-    private void menuPrincipalAdministrador() throws IOException {
+    private void menuPrincipalAdministrador(String username) throws IOException {
+        System.out.println("----------------------------");
+        System.out.println("Bem vindo " + username);
         Menu menu = new Menu(new String[]{
                 "Adicionar informação sobre um novo voo",
                 "Encerrar o dia, não permitindo novas reservas",
