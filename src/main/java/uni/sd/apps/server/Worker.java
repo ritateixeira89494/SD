@@ -241,11 +241,11 @@ public class Worker implements Runnable {
     }
 
     // TODO: Acabar isto
-    private void obterPercursosPossiveis(List<String> dados) {
+    private void obterPercursosPossiveis(List<String> dados) throws VooInexistenteException, SQLException {
         String partida = dados.get(0);
         String destino = dados.get(1);
 
-        List<Integer> voos = ln.obterPercursosPossiveis(partida, destino);
+        List<List<String>> voos = ln.obterPercursosPossiveis(partida, destino);
 
     }
 }

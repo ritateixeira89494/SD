@@ -73,7 +73,7 @@ public class LN implements Iln {
     }
 
     @Override
-    public List<Integer> obterPercursosPossiveis(String partida, String destino) {
+    public List<List<String>> obterPercursosPossiveis(String partida, String destino) throws VooInexistenteException, SQLException {
         return vooFacade.obterPercursosPossiveis(partida, destino);
     }
 

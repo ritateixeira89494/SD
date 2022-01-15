@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class SSVooFacade implements ISSVoo {
@@ -149,14 +150,59 @@ public class SSVooFacade implements ISSVoo {
      * @return Lista com todos os caminhos possíveis começados em partida
      * e acabados em destino com um máximo de 3 saltos
      */
+
+    static class Node {
+        String data;
+
+        // List of children
+        Node children[];
+
+        Node(int n, String data)
+        {
+            children = new Node[n];
+            this.data = data;
+        }
+    }
+
     @Override
-    public List<Integer> obterPercursosPossiveis(String partida, String destino) throws VooInexistenteException, SQLException {
-        // TODO ACABAR MÉTODO
-        List<Integer> res = new ArrayList<>();
+    public List<List<String>> obterPercursosPossiveis(String partida, String destino) throws VooInexistenteException, SQLException {
+        int n = 4;
+        Node root = new Node(n, partida);
 
-        Map<String, Voo> voosPartida = vDAO.getVooPorPartida(partida);
+        int i = 0;
 
-        return res;
+        Map<String, Voo> destinos = daos.getVooPorPartida(partida);
+        for (String dest : destinos.keySet()){
+            root.children[i] = new Node(n, dest);
+            i++;
+        }
+
+        root = preencherFilhos(root, i);
+
+        // TODO AGORA TENHO QUE PERCORRER A ÁRVORE MAS... COMO?
+        List<String> res = new ArrayList<String>();
+
+
+
+        for(int l = 0; l < 4; l++){
+
+        }
+
+        return null;
+    }
+
+
+    public Node preencherFilhos(Node root, int i) throws VooInexistenteException, SQLException {
+        // TODO COMO É QUE METO ISTO RECURSIVO?? PARA JÁ SÓ ESTÁ A FAZER PARA O PRIMEIRO SALTO...
+        int j;
+        for(j = 0; j < i; j++) {
+            Map<String, Voo> novosDestinos = daos.getVooPorPartida(String.valueOf(root.children[j]));
+            for (String novoDest : novosDestinos.keySet()) {
+                root.children[j].children[0] = new Node(4, novoDest);
+            }
+        }
+
+        return root;
     }
 
 }

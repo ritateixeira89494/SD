@@ -28,5 +28,5 @@ public interface Iln {
 
     List<Voo> obterListaVoo() throws SQLException;
 
-    List<Integer> obterPercursosPossiveis(String partida, String destino);
+    List<List<String>> obterPercursosPossiveis(String partida, String destino) throws VooInexistenteException, SQLException;
 }
