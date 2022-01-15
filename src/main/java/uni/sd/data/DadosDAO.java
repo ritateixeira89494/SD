@@ -31,7 +31,7 @@ public class DadosDAO implements IDados {
     private final IReservasDAO rdao;
 
    public DadosDAO() throws SQLException {
-       Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "root", "jackwolf272");
+       Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sd_db", "sd_user", "");
        Lock reservaLock = new ReentrantLock();
        Lock userLock = new ReentrantLock();
        Lock vooLock = new ReentrantLock();
@@ -96,7 +96,7 @@ public class DadosDAO implements IDados {
     }
     @Override
     public Map<String, Voo> getVooPorPartida(String partida) throws SQLException, VooInexistenteException {
-        return getVooPorDestino(partida);
+        return vdao.getVooPorPartida(partida);
     }
     @Override
     public Map<String, Voo> getVooPorDestino(String destino) throws SQLException, VooInexistenteException {

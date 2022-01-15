@@ -131,22 +131,10 @@ public class VoosDAO implements IVoosDAO{
         } finally {
             vooLock.unlock();
         }
-        if(!rs.next()) {
-            throw new VooInexistenteException();
-        }
 
         Map<String, Voo> voos = new HashMap<>();
-        Voo v = new Voo(
-                rs.getString("Partida"),
-                rs.getString("Destino"),
-                rs.getInt("Capacidade"),
-                rs.getInt("Ocupacao"),
-                rs.getInt("Duracao")
-        );
-        voos.put(v.getDestino(), v);
-
         while(rs.next()) {
-            v = new Voo(rs.getString("Partida"),
+            Voo v = new Voo(rs.getString("Partida"),
                     rs.getString("Destino"),
                     rs.getInt("Capacidade"),
                     rs.getInt("Ocupacao"),
@@ -186,22 +174,10 @@ public class VoosDAO implements IVoosDAO{
         } finally {
             vooLock.unlock();
         }
-        if(!rs.next()) {
-            throw new VooInexistenteException();
-        }
 
         Map<String, Voo> voos = new HashMap<>();
-        Voo v = new Voo(
-                rs.getString("Partida"),
-                rs.getString("Destino"),
-                rs.getInt("Capacidade"),
-                rs.getInt("Ocupacao"),
-                rs.getInt("Duracao")
-        );
-        voos.put(v.getPartida(), v);
-
         while(rs.next()) {
-            v = new Voo(
+            Voo v = new Voo(
                     rs.getString("Partida"),
                     rs.getString("Destino"),
                     rs.getInt("Capacidade"),

@@ -96,19 +96,27 @@ public class SSVooFacade implements ISSVoo {
     public List<Integer> reservarVooPorPercurso(String email, List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
             throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
         List<Integer> res = new ArrayList<>();
+        List<LocalDateTime> datas = new ArrayList<>();
         int i;
         for (i = 0; i < voos.size() - 1; i++) {
             String novaPartida = voos.get(i);
             String novoDestino = voos.get(i+1);
             Voo v = daos.getVoo(novaPartida, novoDestino);
-            dataInicio = dataInicio.minusMinutes(v.getDuracao());
+            datas.add(dataInicio);
+            dataInicio = dataInicio.plusMinutes(v.getDuracao());
             if(dataFim.isBefore(dataInicio)){
                 System.out.println("Não foi possível realizar a reserva com esse time frame.");
                 return null;
             }
-            int idReserva = reservarVoo(email, novaPartida, novoDestino, dataInicio);
+        }
+        for(i = 0; i < voos.size() - 1; i++) {
+            LocalDateTime data = datas.get(i);
+            String novaPartida = voos.get(i);
+            String novoDestino = voos.get(i+1);
+            int idReserva = reservarVoo(email, novaPartida, novoDestino, data);
             res.add(idReserva);
         }
+
         return res;
     }
 
@@ -147,58 +155,45 @@ public class SSVooFacade implements ISSVoo {
 
     @Override
     public List<List<String>> obterPercursosPossiveis(String partida, String destinoFinal) throws VooInexistenteException, SQLException {
-        List<Node> caminho = new ArrayList<>();
-        Node arv = new Node(partida, caminho);
+        Node arv;
 
         int saltos = 0;
-        arv = preecherArvore(arv, partida, saltos);
+        arv = preecherArvore(partida, saltos);
 
         List<List<String>> res = new ArrayList<>();
-        guardarPercursosPossiveis(arv, res, destinoFinal);
-
+        guardarPercursosPossiveis(arv, new ArrayList<>(), res, destinoFinal);
         return res;
     }
 
-    public Node preecherArvore(Node arv, String partida, int saltos) throws VooInexistenteException, SQLException {
-        //EU ACHO QUE ISTO ESTÁ BEM MAS NÃO TENHO A CERTEZA!!!!!!!!!!!
-        //QUANTO MAIS OLHO PARA ISTO, MAIS ERRADO PARECE
-        arv.cidade = partida;
+    public Node preecherArvore(String partida, int saltos) throws VooInexistenteException, SQLException {
+        Node arv = null;
+        if(saltos <= 3) {
+            Map<String, Voo> destinos = daos.getVooPorPartida(partida);
+            List<String> novasPartidas = new ArrayList<>(destinos.keySet());
 
-        Map<String, Voo> destinos = daos.getVooPorPartida(partida);
-        List<String> novasPartidas = new ArrayList<>(destinos.keySet());
-        for(String nPartida : novasPartidas) {
-            if(saltos <= 4) {
-                saltos++;
-                arv.caminho.add(preecherArvore(arv, nPartida, saltos));
+            arv = new Node(partida, new ArrayList<>());
+            saltos++;
+            for(String nPartida : novasPartidas) {
+                Node filho = preecherArvore(nPartida, saltos);
+                if(filho != null) {
+                    arv.caminho.add(filho);
+                }
             }
         }
 
         return arv;
     }
 
+    public void guardarPercursosPossiveis(Node arv, List<String> caminho, List<List<String>> tudo, String destinoFinal) {
+        List<String> novoCaminho = new ArrayList<>(caminho);
+        novoCaminho.add(arv.cidade);
 
-    public List<List<String>> guardarPercursosPossiveis(Node arv, List<List<String>> res, String destinoFinal){
-        int count = 0;
-        List<String> umPercurso = new ArrayList<>();
-        for(int i = 0; i < arv.caminho.size(); i++){
-            umPercurso = guardarPercurso(arv, res.get(i), destinoFinal, count);
-            res.add(umPercurso);
+        if (arv.cidade.equals(destinoFinal)) {
+            tudo.add(novoCaminho);
+        } else {
+            for (Node filho : arv.caminho) {
+                guardarPercursosPossiveis(filho, novoCaminho, tudo, destinoFinal);
+            }
         }
-        return res;
     }
-
-    public List<String> guardarPercurso(Node arv, List<String> percurso, String destinoFinal, int count){
-        if(percurso.size() < 4 && Objects.equals(arv.cidade, destinoFinal)){
-            percurso.add(arv.cidade);
-            return percurso;
-        }
-        else if(percurso.size() < 4){
-            percurso.add(arv.cidade);
-            count++;
-            guardarPercurso(arv.caminho.get(count), percurso, destinoFinal, count);
-        }
-        return null;
-    }
-
-
 }
