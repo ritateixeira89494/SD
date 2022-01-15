@@ -10,16 +10,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ILN {
-    Pair<String, Integer> autenticar(String username, String password) throws CredenciaisErradasException, IOException;
+    Pair<String, Integer> autenticar(String username, String password) throws CredenciaisErradasException, IOException, DiaJaEncerradoException;
     void registar(String email, String username, String password, int authority)
-            throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException;
+            throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException, DiaJaEncerradoException;
 
-    int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException;
-    void cancelarVoo(int id) throws ReservaInexistenteException, IOException, VooInexistenteException, UtilizadorInexistenteException;
+    int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException;
+    void cancelarVoo(int id) throws ReservaInexistenteException, IOException, VooInexistenteException, UtilizadorInexistenteException, DiaJaEncerradoException;
     void addInfo(String partida, String destino, int capacidade, int duracao) throws VooExisteException, CapacidadeInvalidaException, PartidaDestinoIguaisException, IOException, DuracaoInvalidaException;
     void encerrarDia() throws DiaJaEncerradoException, IOException;
     void abrirDia() throws DiaJaAbertoException, IOException;
-    void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException;
-    List<Voo> obterListaVoo() throws IOException;
-    List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException;
+    void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException;
+    List<Voo> obterListaVoo() throws IOException, DiaJaEncerradoException;
+    List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException, DiaJaEncerradoException;
 }

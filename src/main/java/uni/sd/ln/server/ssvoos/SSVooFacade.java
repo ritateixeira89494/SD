@@ -16,7 +16,6 @@ import java.util.Objects;
 
 public class SSVooFacade implements ISSVoo {
     IDados daos;
-    private boolean diaAberto = true;
 
     public SSVooFacade(IDados daos) {
         this.daos = daos;
@@ -82,30 +81,6 @@ public class SSVooFacade implements ISSVoo {
 
         Voo novoVoo = new Voo(partida, destino, capacidade, 0, duracao);
         daos.saveVoo(novoVoo);
-    }
-
-    /**
-     * Encerra o dia.
-     * Se o dia já estiver encerrado atira um DiaJaEncerradoException.
-     */
-    @Override
-    public void encerrarDia() throws DiaJaEncerradoException {
-        if (!diaAberto) {
-            throw new DiaJaEncerradoException();
-        }
-        diaAberto = false;
-    }
-
-    /**
-     * Abre o dia.
-     * Se o dia já estiver aberto atira um DiaJaAbertoException.
-     */
-    @Override
-    public void abrirDia() throws DiaJaAbertoException {
-        if (diaAberto) {
-            throw new DiaJaAbertoException();
-        }
-        diaAberto = true;
     }
 
     /**

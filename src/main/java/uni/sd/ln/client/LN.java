@@ -23,15 +23,18 @@ public class LN implements ILN {
     }
 
     @Override
-    public Pair<String, Integer> autenticar(String email, String password) throws CredenciaisErradasException, IOException {
+    public Pair<String, Integer> autenticar(String email, String password) throws IOException, CredenciaisErradasException, DiaJaEncerradoException {
         List<String> dados = new ArrayList<>();
         dados.add(email);
         dados.add(password);
         tc.send("AUTH", dados);
 
         Frame respostaFrame = tc.receive();
-        if(respostaFrame.getTipo().equals(CredenciaisErradasException.Tipo)) {
-            throw new CredenciaisErradasException();
+        switch(respostaFrame.getTipo()) {
+            case CredenciaisErradasException.Tipo:
+                throw new CredenciaisErradasException();
+            case DiaJaEncerradoException.Tipo:
+                throw new DiaJaEncerradoException();
         }
         String username = respostaFrame.getDados().get(0);
         int authority = Integer.parseInt(respostaFrame.getDados().get(1));
@@ -40,7 +43,7 @@ public class LN implements ILN {
     }
 
     @Override
-    public void registar(String email, String username, String password, int authority) throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException {
+    public void registar(String email, String username, String password, int authority) throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException, DiaJaEncerradoException {
         List<String> dados = new ArrayList<>();
         dados.add(email);
         dados.add(username);
@@ -56,11 +59,13 @@ public class LN implements ILN {
                 throw new UsernameInvalidoException();
             case PasswordInvalidaException.Tipo:
                 throw new PasswordInvalidaException();
+            case DiaJaEncerradoException.Tipo:
+                throw new DiaJaEncerradoException();
         }
     }
 
     @Override
-    public int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+    public int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException {
         List<String> dados = new ArrayList<>();
         dados.add(partida);
         dados.add(destino);
@@ -78,13 +83,15 @@ public class LN implements ILN {
                 throw new ReservaExisteException();
             case ReservaInexistenteException.Tipo:
                 throw new ReservaInexistenteException();
+            case DiaJaEncerradoException.Tipo:
+                throw new DiaJaEncerradoException();
         }
 
         return Integer.parseInt(f.getDados().get(0));
     }
 
     @Override
-    public void cancelarVoo(int ID) throws ReservaInexistenteException, IOException, VooInexistenteException, UtilizadorInexistenteException {
+    public void cancelarVoo(int ID) throws ReservaInexistenteException, IOException, VooInexistenteException, UtilizadorInexistenteException, DiaJaEncerradoException {
         List<String> dados = new ArrayList<>();
         dados.add(ID + "");
         tc.send(TipoMensagem.CANCELVOO, dados);
@@ -97,6 +104,8 @@ public class LN implements ILN {
                 throw new VooInexistenteException();
             case UtilizadorInexistenteException.Tipo:
                 throw new UtilizadorInexistenteException();
+            case DiaJaEncerradoException.Tipo:
+                throw new DiaJaEncerradoException();
         }
     }
 
@@ -143,7 +152,7 @@ public class LN implements ILN {
     }
 
     @Override
-    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+    public void reservarVooPorPercurso(List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim) throws VooInexistenteException, DataInvalidaException, SemReservaDisponivelException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException {
         List<String> dados = new ArrayList<>();
         dados.add(dataInicio.format(DateTimeFormatter.ISO_DATE_TIME));
         dados.add(dataFim.format(DateTimeFormatter.ISO_DATE_TIME));
@@ -164,14 +173,19 @@ public class LN implements ILN {
                 throw new ReservaExisteException();
             case ReservaInexistenteException.Tipo:
                 throw new ReservaInexistenteException();
+            case DiaJaEncerradoException.Tipo:
+                throw new DiaJaEncerradoException();
         }
     }
 
     @Override
-    public List<Voo> obterListaVoo() throws IOException {
+    public List<Voo> obterListaVoo() throws IOException, DiaJaEncerradoException {
         tc.send(TipoMensagem.LSVOO, new ArrayList<>());
         Frame f = tc.receive();
 
+        if(f.getTipo().equals(DiaJaEncerradoException.Tipo)) {
+            throw new DiaJaEncerradoException();
+        }
         List<String> dados = f.getDados();
         List<Voo> voos = new ArrayList<>();
         for(int i = 0; i < dados.size(); i+=5) {
@@ -181,13 +195,17 @@ public class LN implements ILN {
     }
 
     @Override
-    public List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException {
+    public List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException, DiaJaEncerradoException {
         List<String> dados = new ArrayList<>();
         dados.add(partida);
         dados.add(destino);
 
         tc.send(TipoMensagem.PERCURSOSPOS, dados);
         Frame f = tc.receive();
+        if(f.getTipo().equals(DiaJaEncerradoException.Tipo)) {
+            throw new DiaJaEncerradoException();
+        }
+
         List<String> respDados = f.getDados();
 
         List<Voo> voos = new ArrayList<>();

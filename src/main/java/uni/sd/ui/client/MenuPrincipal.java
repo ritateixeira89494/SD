@@ -58,6 +58,8 @@ public class MenuPrincipal {
             redirecionarMenu(info.getLeft(), info.getRight());
         } catch (CredenciaisErradasException e) {
             System.out.println("As credenciais encontram-se incorretas");
+        } catch (DiaJaEncerradoException e) {
+            System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
 
@@ -89,6 +91,8 @@ public class MenuPrincipal {
             System.out.println("O username é inválido");
         } catch (PasswordInvalidaException e) {
             System.out.println("A password é inválida");
+        } catch (DiaJaEncerradoException e) {
+            System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
 
@@ -129,6 +133,8 @@ public class MenuPrincipal {
             System.out.println("Esta reserva já existe");
         } catch (ReservaInexistenteException e) {
             System.out.println("A reserva não foi adicionada corretamente");
+        } catch (DiaJaEncerradoException e) {
+            System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
 
@@ -143,6 +149,8 @@ public class MenuPrincipal {
             System.out.println("O voo não existe");
         } catch (UtilizadorInexistenteException e) {
             System.out.println("O utilizador não se encontra neste voo");
+        } catch (DiaJaEncerradoException e) {
+            System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
 
@@ -167,21 +175,27 @@ public class MenuPrincipal {
             System.out.println("Existe uma reserva possível");
         } catch (ReservaInexistenteException e) {
             System.out.println("Não é possível efetuar a reserva");
+        } catch (DiaJaEncerradoException e) {
+            System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
 
     private void obterListaVoo() throws IOException {
-        List<Voo> voos = model.obterListaVoo();
-
-        for(Voo v: voos) {
-            System.out.println(
-                    "Partida: " + v.getPartida() + " " +
-                            "Destino: " + v.getDestino() + " " +
-                            "Capacidade: " + v.getCapacidade() + " " +
-                            "Ocupação: " + v.getOcupacao() + " " +
-                            "Duração: " + v.getOcupacao()
-                    );
+        try {
+            List<Voo> voos = model.obterListaVoo();
+            for(Voo v: voos) {
+                System.out.println(
+                        "Partida: " + v.getPartida() + " " +
+                                "Destino: " + v.getDestino() + " " +
+                                "Capacidade: " + v.getCapacidade() + " " +
+                                "Ocupação: " + v.getOcupacao() + " " +
+                                "Duração: " + v.getOcupacao()
+                );
+            }
+        } catch (DiaJaEncerradoException e) {
+            System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
+
     }
 
     private void obterPercursosPossiveis() throws IOException {
@@ -189,7 +203,11 @@ public class MenuPrincipal {
         String origem = scin.nextLine();
         System.out.println("Indique aqui o destino do voo : ");
         String destino = scin.nextLine();
-        model.obterPercursosPossiveis(origem,destino);
+        try {
+            model.obterPercursosPossiveis(origem,destino);
+        } catch (DiaJaEncerradoException e) {
+            System.out.println("O dia já foi encerrado. Tente novamente amanhã");
+        }
     }
 
     private void menuPrincipalAdministrador(String username) throws IOException {

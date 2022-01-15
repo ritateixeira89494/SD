@@ -74,7 +74,7 @@ public class Worker implements Runnable {
         }
     }
 
-    private void autenticar(List<String> dados) throws Exception {
+    private void autenticar(List<String> dados) throws IOException, SQLException {
         String email = dados.get(0);
         String password = dados.get(1);
 
@@ -87,8 +87,10 @@ public class Worker implements Runnable {
             tipoResp = TipoMensagem.OK;
             respDados.add(info.getLeft());
             respDados.add(this.authority + "");
-        } catch (CredenciaisErradasException e) {
+        } catch (CredenciaisErradasException | UtilizadorInexistenteException e) {
             tipoResp = CredenciaisErradasException.Tipo;
+        } catch (DiaJaEncerradoException e) {
+            tipoResp = DiaJaEncerradoException.Tipo;
         }
         tc.send(tipoResp, respDados);
     }
@@ -110,6 +112,8 @@ public class Worker implements Runnable {
             tipoDados = UsernameInvalidoException.Tipo;
         } catch (PasswordInvalidaException e) {
             tipoDados = PasswordInvalidaException.Tipo;
+        } catch (DiaJaEncerradoException e) {
+            tipoDados = DiaJaEncerradoException.Tipo;
         }
         Frame f = new Frame(tipoDados, respDados);
         tc.send(f);
@@ -134,6 +138,8 @@ public class Worker implements Runnable {
             tipoResp = ReservaExisteException.Tipo;
         } catch (ReservaInexistenteException e) {
             tipoResp = ReservaInexistenteException.Tipo;
+        } catch (DiaJaEncerradoException e) {
+            tipoResp = DiaJaEncerradoException.Tipo;
         }
         tc.send(tipoResp, respDados);
 }
@@ -151,6 +157,8 @@ public class Worker implements Runnable {
             tipoResp = VooInexistenteException.Tipo;
         } catch (UtilizadorInexistenteException e) {
             tipoResp = UtilizadorInexistenteException.Tipo;
+        } catch (DiaJaEncerradoException e) {
+            tipoResp = DiaJaEncerradoException.Tipo;
         }
         tc.send(tipoResp, new ArrayList<>());
 }
@@ -226,31 +234,46 @@ public class Worker implements Runnable {
             tipoResp = ReservaExisteException.Tipo;
         } catch (ReservaInexistenteException e) {
             tipoResp = ReservaInexistenteException.Tipo;
+        } catch (DiaJaEncerradoException e) {
+            tipoResp = DiaJaEncerradoException.Tipo;
         }
 
         tc.send(tipoResp, new ArrayList<>());
 }
 
     private void obterListaVoo(List<String> dados) throws IOException, SQLException {
-        List<Voo> voos = ln.obterListaVoo();
-
         List<String> respDados = new ArrayList<>();
-        for(Voo v: voos) {
-            respDados.add(v.getPartida());
-            respDados.add(v.getDestino());
-            respDados.add(v.getCapacidade() + "");
-            respDados.add(v.getOcupacao() + "");
-            respDados.add(v.getDuracao() + "");
+        String tipoResp;
+        try {
+            List<Voo> voos = ln.obterListaVoo();
+
+            for(Voo v: voos) {
+                respDados.add(v.getPartida());
+                respDados.add(v.getDestino());
+                respDados.add(v.getCapacidade() + "");
+                respDados.add(v.getOcupacao() + "");
+                respDados.add(v.getDuracao() + "");
+            }
+            tipoResp = TipoMensagem.OK;
+        } catch (DiaJaEncerradoException e) {
+            tipoResp = DiaJaEncerradoException.Tipo;
         }
-    tc.send(TipoMensagem.LSVOO, respDados);
+    tc.send(tipoResp, respDados);
     }
 
     // TODO: Acabar isto
-    private void obterPercursosPossiveis(List<String> dados) throws VooInexistenteException, SQLException {
+    private void obterPercursosPossiveis(List<String> dados) throws VooInexistenteException, SQLException, IOException {
         String partida = dados.get(0);
         String destino = dados.get(1);
 
-        List<List<String>> voos = ln.obterPercursosPossiveis(partida, destino);
-
+        String tipoResp;
+        List<String> respDados = new ArrayList<>();
+        try {
+            List<List<String>> voos = ln.obterPercursosPossiveis(partida, destino);
+            tipoResp = TipoMensagem.OK;
+        } catch (DiaJaEncerradoException e) {
+            tipoResp = DiaJaEncerradoException.Tipo;
+        }
+        tc.send(tipoResp, respDados);
     }
 }
