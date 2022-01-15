@@ -1,5 +1,6 @@
 package uni.sd.ui.client;
 
+import java.io.IOException;
 import java.util.*;
 
 public class Menu {
@@ -8,7 +9,7 @@ public class Menu {
 
     /** Functional interface para handlers. */
     public interface Handler {
-        void execute();
+        void execute() throws IOException;
     }
 
     /** Functional interface para pré-condições. */
@@ -126,7 +127,7 @@ public class Menu {
     /**
      * Correr o menu uma vez.
      */
-    public void runOnce() {
+    public void runOnce() throws IOException {
         int op;
         show();
         op = readOption();
@@ -144,7 +145,7 @@ public class Menu {
      *
      * Termina com a opção 0 (zero).
      */
-    public void run() {
+    public void run() throws IOException {
         int op;
         do {
             show();
