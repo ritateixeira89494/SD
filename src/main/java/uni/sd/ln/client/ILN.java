@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ILN {
-    Pair<String, Integer> autenticar(String username, String password) throws CredenciaisErradasException, IOException;
+    Pair<String, Integer> autenticar(String email, String password) throws CredenciaisErradasException, IOException;
     void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException;
             // Sign up
