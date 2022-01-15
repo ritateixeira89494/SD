@@ -33,6 +33,7 @@ public class MenuPrincipal {
 
         menu.run();
 
+        System.out.println();
         System.out.println("Tenha um bom dia!");
     }
 
@@ -76,6 +77,13 @@ public class MenuPrincipal {
         int autoridade = Integer.parseInt(scin.nextLine());
         try {
             model.registar(email,username,password,autoridade);
+            if (autoridade == 1) {
+                System.out.println();
+                System.out.println("Administrador registado com sucesso");
+            } else {
+                System.out.println();
+                System.out.println("Utilizador registado com sucesso");
+            }
         } catch (UtilizadorExisteException e) {
             System.out.println();
             System.out.println("O utilizador já existe");
@@ -166,10 +174,10 @@ public class MenuPrincipal {
         System.out.println("Indique aqui os voos que deseja realizar, separadas por vírgulas : ");
         List<String> localizacoes = List.of((scin.nextLine()).split(","));
         System.out.println();
-        System.out.println("Hora de início : ");
+        System.out.println("Data de início : (Formato: dd-MM-yyyy HH:mm)");
         LocalDateTime start = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
         System.out.println();
-        System.out.println("Hora de fim : ");
+        System.out.println("Data de fim : (Formato: dd-MM-yyyy HH:mm)");
         LocalDateTime finish = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
         System.out.println();
         try {
@@ -199,15 +207,16 @@ public class MenuPrincipal {
     }
 
     private void obterListaVoo() throws IOException {
+        System.out.println();
         try {
             List<Voo> voos = model.obterListaVoo();
             for(Voo v: voos) {
                 System.out.println(
-                        "Partida: " + v.getPartida() + " " +
-                                "Destino: " + v.getDestino() + " " +
-                                "Capacidade: " + v.getCapacidade() + " " +
-                                "Ocupação: " + v.getOcupacao() + " " +
-                                "Duração: " + v.getOcupacao()
+                        "Partida: " + v.getPartida() + ";" + " " +
+                                "Destino: " + v.getDestino() + ";" + " " +
+                                "Capacidade: " + v.getCapacidade() + ";" + " " +
+                                "Ocupação: " + v.getOcupacao() + ";" + " " +
+                                "Duração: " + v.getOcupacao() + "."
                 );
             }
         } catch (DiaJaEncerradoException e) {
@@ -216,6 +225,7 @@ public class MenuPrincipal {
 
     }
 
+    // Issue
     private void obterPercursosPossiveis() throws IOException {
         System.out.println("Indique aqui a origem do voo : ");
         String origem = scin.nextLine();
@@ -280,6 +290,7 @@ public class MenuPrincipal {
     private void encerrarDia() throws IOException {
         try {
             model.encerrarDia();
+            System.out.println();
             System.out.println("O dia foi encerrado para reservas");
         } catch (DiaJaEncerradoException e) {
             System.out.println();
@@ -290,6 +301,7 @@ public class MenuPrincipal {
     private void abrirDia() throws IOException {
         try {
             model.abrirDia();
+            System.out.println();
             System.out.println("O dia foi aberto para reservas");
         } catch (DiaJaAbertoException e) {
             System.out.println();
