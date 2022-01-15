@@ -1,5 +1,7 @@
 package uni.sd.ui.client;
 
+import uni.sd.data.ssutilizadores.UtilizadoresDAO;
+import uni.sd.data.ssutilizadores.IUtilizadoresDAO;
 import uni.sd.ln.client.ILN;
 import uni.sd.ln.client.LN;
 import uni.sd.ln.server.ssutilizadores.exceptions.*;
@@ -35,26 +37,29 @@ public class MenuPrincipal {
         System.out.println("Bem vindo!");
 
         Menu menu = new Menu(new String[]{
-            "Entrar",
-            "Registrar",
-            "Sair"
+            "Entrar no sistema, usando credenciais ",
+            "Registrar novos utilizadores",
+            "Sair do sistema"
         });
         menu.setHandler(1, this::login);
         menu.setHandler(2, this::registar);
+
         menu.run();
 
         System.out.println("Tenha um bom dia!");
     }
 
     private void login() throws IOException {
-        System.out.println("Username : ");
-        String username = scin.nextLine();
+        System.out.println("Email : ");
+        String email = scin.nextLine();
         System.out.println("Password : ");
         String password = scin.nextLine();
         try {
-            int authority = model.autenticar(username,password);
+            int authority = model.autenticar(email,password);
+            System.out.println("Bem vindo " + );
             redirecionarMenu(authority);
         } catch (CredenciaisErradasException e) {
+            System.out.println();
             System.out.println("As credenciais encontram-se incorretas");
         }
     }
@@ -82,10 +87,13 @@ public class MenuPrincipal {
         try {
             model.registar(email,username,password,autoridade);
         } catch (UtilizadorExisteException e) {
-            System.out.println("O utilizador já existe");;
+            System.out.println();
+            System.out.println("O utilizador já existe");
         } catch (UsernameInvalidoException e) {
+            System.out.println();
             System.out.println("O username é inválido");
         } catch (PasswordInvalidaException e) {
+            System.out.println();
             System.out.println("A password é inválida");
         }
     }
@@ -111,21 +119,30 @@ public class MenuPrincipal {
     private void reservarVoo() throws IOException {
         System.out.println("Origem : ");
         String origem = scin.nextLine();
+        System.out.println();
         System.out.println("Destino : ");
         String destino = scin.nextLine();
+        System.out.println();
         System.out.println("Data do voo : ");
         LocalDateTime dia = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm"));
         try {
-            model.reservarVoo(origem,destino,dia);
+            int id = model.reservarVoo(origem,destino,dia);
+            System.out.println("Voo reservado com sucesso");
+            System.out.println("ID da reserva : " + id);
         } catch (VooInexistenteException e) {
+            System.out.println();
             System.out.println("O voo não existe");
         } catch (UtilizadorInexistenteException e) {
+            System.out.println();
             System.out.println("Utilizador não existe");
         } catch (ReservaExisteException e) {
+            System.out.println();
             System.out.println("Esta reserva já existe");
         } catch (ReservaInexistenteException e) {
+            System.out.println();
             System.out.println("A reserva não foi adicionada corretamente");
         }
+
     }
 
     private void cancelarVoo() throws IOException {
@@ -133,11 +150,15 @@ public class MenuPrincipal {
         String id = scin.nextLine();
         try {
             model.cancelarVoo(Integer.parseInt(id));
+            System.out.println("O voo foi cancelado com sucesso");
         } catch (ReservaInexistenteException e) {
+            System.out.println();
             System.out.println("Esta reserva não existe");
         } catch (VooInexistenteException e) {
+            System.out.println();
             System.out.println("O voo não existe");
         } catch (UtilizadorInexistenteException e) {
+            System.out.println();
             System.out.println("O utilizador não se encontra neste voo");
         }
     }
@@ -151,17 +172,24 @@ public class MenuPrincipal {
         LocalDateTime finish = LocalDateTime.parse(scin.nextLine(), DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm"));
         try {
             model.reservarVooPorPercurso(localizacoes,start,finish);
+            System.out.println("Os voos foram reservados com sucesso");
         } catch (VooInexistenteException e) {
+            System.out.println();
             System.out.println("Não é possível obter este percurso, devido a um dos voos não existir");
         } catch (DataInvalidaException e) {
+            System.out.println();
             System.out.println("Uma das datas específicadas não é válida");
         } catch (SemReservaDisponivelException e) {
+            System.out.println();
             System.out.println("Não existe uma reserva possível para o percurso especificado");
         } catch (UtilizadorInexistenteException e) {
+            System.out.println();
             System.out.println("O utilizador não existe");
         } catch (ReservaExisteException e) {
+            System.out.println();
             System.out.println("Existe uma reserva possível");
         } catch (ReservaInexistenteException e) {
+            System.out.println();
             System.out.println("Não é possível efetuar a reserva");
         }
     }
@@ -203,13 +231,18 @@ public class MenuPrincipal {
         int duracao = Integer.parseInt(scin.nextLine());
         try {
             model.addInfo(origem,destino,passa,duracao);
+            System.out.println("Informação sobre voo adicionada com sucesso");
         } catch (VooExisteException e) {
-            System.out.println("O voo existe");
+            System.out.println();
+            System.out.println("O voo já existe");
         } catch (CapacidadeInvalidaException e) {
+            System.out.println();
             System.out.println("Não é possível adicionar essa quantidade de passageiros");
         } catch (PartidaDestinoIguaisException e) {
+            System.out.println();
             System.out.println("A origem e o destino é a mesma localização");
         } catch (DuracaoInvalidaException e) {
+            System.out.println();
             System.out.println("A duração da viagem não é válida");
         }
     }
@@ -217,7 +250,9 @@ public class MenuPrincipal {
     private void encerrarDia() throws IOException {
         try {
             model.encerrarDia();
+            System.out.println("O dia foi encerrado para reservas");
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já se encontra encerrado");
         }
     }
@@ -225,7 +260,9 @@ public class MenuPrincipal {
     private void abrirDia() throws IOException {
         try {
             model.abrirDia();
+            System.out.println("O dia foi aberto para reservas");
         } catch (DiaJaAbertoException e) {
+            System.out.println();
             System.out.println("O dia já se encontra aberto");
         }
     }

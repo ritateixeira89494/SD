@@ -6,7 +6,6 @@ import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.net.Frame;
 import uni.sd.net.TaggedConnection;
 import uni.sd.net.TipoMensagem;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.time.LocalDateTime;
