@@ -4,7 +4,7 @@ import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.net.Frame;
-import uni.sd.net.TaggedConnection;
+import uni.sd.net.Connection;
 import uni.sd.net.TipoMensagem;
 import uni.sd.utils.Pair;
 
@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LN implements ILN {
-    TaggedConnection tc;
+    Connection tc;
 
     public LN() throws IOException {
-        tc = new TaggedConnection(new Socket("localhost", 12345));
+        tc = new Connection(new Socket("localhost", 12345));
     }
 
     @Override
@@ -190,7 +190,7 @@ public class LN implements ILN {
         }
         List<String> dados = f.getDados();
         List<Voo> voos = new ArrayList<>();
-        for(int i = 0; i < dados.size(); i+=5) {
+        for(int i = 0; i < dados.size(); i+=4) {
             voos.add(new Voo(dados.get(i), dados.get(i+1), Integer.parseInt(dados.get(i+2)), Integer.parseInt(dados.get(i+3))));
         }
         return voos;
