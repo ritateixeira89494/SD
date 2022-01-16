@@ -5,7 +5,7 @@ import uni.sd.ln.server.ssutilizadores.exceptions.*;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
 import uni.sd.net.Frame;
-import uni.sd.net.TaggedConnection;
+import uni.sd.net.Connection;
 import uni.sd.net.TipoMensagem;
 import uni.sd.utils.Pair;
 
@@ -18,12 +18,12 @@ import java.util.List;
 
 public class Worker implements Runnable {
 
-    private final TaggedConnection tc;
+    private final Connection tc;
     private final Iln ln;
     private String email;
     private int authority;
 
-    public Worker(TaggedConnection tc, Iln ln) {
+    public Worker(Connection tc, Iln ln) {
         this.tc = tc;
         this.ln = ln;
     }

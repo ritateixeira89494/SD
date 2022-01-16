@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import uni.sd.data.DadosDAO;
 import uni.sd.ln.server.Iln;
 import uni.sd.ln.server.LN;
-import uni.sd.net.TaggedConnection;
+import uni.sd.net.Connection;
 
 public class Server {
     public static void main(String[] args) throws IOException, SQLException {
@@ -18,7 +18,7 @@ public class Server {
         try {
             while(true) {
                 Socket s = ss.accept();
-                TaggedConnection c = new TaggedConnection(s);
+                Connection c = new Connection(s);
 
                 Thread t = new Thread(new Worker(c, ln));
                 t.start();
