@@ -64,7 +64,7 @@ public class LN implements ILN {
     }
 
     @Override
-    public int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException {
+    public int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException, SemReservaDisponivelException {
         List<String> dados = new ArrayList<>();
         dados.add(partida);
         dados.add(destino);
@@ -84,6 +84,8 @@ public class LN implements ILN {
                 throw new ReservaInexistenteException();
             case DiaJaEncerradoException.Tipo:
                 throw new DiaJaEncerradoException();
+            case SemReservaDisponivelException.Tipo:
+                throw new SemReservaDisponivelException();
         }
 
         return Integer.parseInt(f.getDados().get(0));

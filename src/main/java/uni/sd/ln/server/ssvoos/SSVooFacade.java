@@ -11,11 +11,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 
 public class SSVooFacade implements ISSVoo {
-    IDados daos;
+    private final IDados daos;
 
     public SSVooFacade(IDados daos) {
         this.daos = daos;
@@ -30,7 +29,7 @@ public class SSVooFacade implements ISSVoo {
      */
     @Override
     public int reservarVoo(String email, String partida, String destino, LocalDateTime data) throws VooInexistenteException,
-            SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+            SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, SemReservaDisponivelException {
         Voo v = daos.getVoo(partida, destino);
         LocalDateTime dataNow = LocalDateTime.now();
         Reserva r = new Reserva(email, partida, destino, data, dataNow);
@@ -94,7 +93,7 @@ public class SSVooFacade implements ISSVoo {
      */
     @Override
     public List<Integer> reservarVooPorPercurso(String email, List<String> voos, LocalDateTime dataInicio, LocalDateTime dataFim)
-            throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException {
+            throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, SemReservaDisponivelException {
         List<Integer> res = new ArrayList<>();
         List<LocalDateTime> datas = new ArrayList<>();
         int i;
@@ -165,7 +164,7 @@ public class SSVooFacade implements ISSVoo {
         return res;
     }
 
-    public Node preecherArvore(String partida, int saltos) throws VooInexistenteException, SQLException {
+    private Node preecherArvore(String partida, int saltos) throws VooInexistenteException, SQLException {
         Node arv = null;
         if(saltos <= 3) {
             Map<String, Voo> destinos = daos.getVooPorPartida(partida);
@@ -184,7 +183,7 @@ public class SSVooFacade implements ISSVoo {
         return arv;
     }
 
-    public void guardarPercursosPossiveis(Node arv, List<String> caminho, List<List<String>> tudo, String destinoFinal) {
+    private void guardarPercursosPossiveis(Node arv, List<String> caminho, List<List<String>> tudo, String destinoFinal) {
         List<String> novoCaminho = new ArrayList<>(caminho);
         novoCaminho.add(arv.cidade);
 

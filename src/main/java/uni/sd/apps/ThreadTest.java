@@ -4,10 +4,7 @@ import uni.sd.ln.client.ILN;
 import uni.sd.ln.client.LN;
 import uni.sd.ln.server.ssutilizadores.exceptions.CredenciaisErradasException;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
-import uni.sd.ln.server.ssvoos.exceptions.DiaJaEncerradoException;
-import uni.sd.ln.server.ssvoos.exceptions.ReservaExisteException;
-import uni.sd.ln.server.ssvoos.exceptions.ReservaInexistenteException;
-import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -38,6 +35,8 @@ public class ThreadTest {
                 } catch (CredenciaisErradasException e) {
                     e.printStackTrace();
                 } catch (DiaJaEncerradoException e) {
+                    e.printStackTrace();
+                } catch (SemReservaDisponivelException e) {
                     e.printStackTrace();
                 }
             });

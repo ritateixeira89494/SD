@@ -15,7 +15,7 @@ public interface ILN {
     void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, IOException, DiaJaEncerradoException;
     // Normal
-    int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException;
+    int reservarVoo(String partida, String destino, LocalDateTime data) throws VooInexistenteException, IOException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException, SemReservaDisponivelException;
     // Normal
     void cancelarVoo(int id) throws ReservaInexistenteException, IOException, VooInexistenteException, UtilizadorInexistenteException, DiaJaEncerradoException;
     // Administrador

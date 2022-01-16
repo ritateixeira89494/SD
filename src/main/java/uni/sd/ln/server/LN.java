@@ -46,7 +46,7 @@ public class LN implements Iln {
     @Override
     public int reservarVoo(String email, String partida, String destino, LocalDateTime data)
             throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException,
-            ReservaInexistenteException, DiaJaEncerradoException {
+            ReservaInexistenteException, DiaJaEncerradoException, SemReservaDisponivelException {
         if(!diaAberto) {
             throw new DiaJaEncerradoException();
         }

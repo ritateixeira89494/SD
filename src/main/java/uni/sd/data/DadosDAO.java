@@ -9,10 +9,7 @@ import uni.sd.data.ssvoos.voos.VoosDAO;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorExisteException;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
 import uni.sd.ln.server.ssutilizadores.utilizadores.Utilizador;
-import uni.sd.ln.server.ssvoos.exceptions.ReservaExisteException;
-import uni.sd.ln.server.ssvoos.exceptions.ReservaInexistenteException;
-import uni.sd.ln.server.ssvoos.exceptions.VooExisteException;
-import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.reservas.Reserva;
 import uni.sd.ln.server.ssvoos.voos.Voo;
 
@@ -61,7 +58,7 @@ public class DadosDAO implements IDados {
 
     // Métodos do IReservasDAO
     @Override
-    public int saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException {
+    public int saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException, SemReservaDisponivelException {
         return rdao.saveReserva(r);
     }
     @Override

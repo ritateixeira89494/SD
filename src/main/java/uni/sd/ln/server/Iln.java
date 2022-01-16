@@ -15,7 +15,7 @@ public interface Iln {
     void registar(String email, String username, String password, int authority)
             throws UtilizadorExisteException, UsernameInvalidoException, PasswordInvalidaException, SQLException, DiaJaEncerradoException;
 
-    int reservarVoo(String email, String partida, String destino, LocalDateTime data) throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException;
+    int reservarVoo(String email, String partida, String destino, LocalDateTime data) throws VooInexistenteException, SQLException, UtilizadorInexistenteException, ReservaExisteException, ReservaInexistenteException, DiaJaEncerradoException, SemReservaDisponivelException;
 
     void cancelarVoo(int id) throws ReservaInexistenteException, VooInexistenteException, SQLException, UtilizadorInexistenteException, DiaJaEncerradoException;
 

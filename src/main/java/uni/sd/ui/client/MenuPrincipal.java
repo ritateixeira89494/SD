@@ -145,6 +145,9 @@ public class MenuPrincipal {
             System.out.println("A reserva não foi adicionada corretamente");
         } catch (DiaJaEncerradoException e) {
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
+        } catch (SemReservaDisponivelException e) {
+            System.out.println("Já não existem reservas disponíveis para este voo");
+
         }
 
     }

@@ -140,6 +140,8 @@ public class Worker implements Runnable {
             tipoResp = ReservaInexistenteException.Tipo;
         } catch (DiaJaEncerradoException e) {
             tipoResp = DiaJaEncerradoException.Tipo;
+        } catch (SemReservaDisponivelException e) {
+            tipoResp = SemReservaDisponivelException.Tipo;
         }
         tc.send(tipoResp, respDados);
 }

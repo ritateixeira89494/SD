@@ -3,6 +3,7 @@ package uni.sd.data.ssvoos.reservas;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
 import uni.sd.ln.server.ssvoos.exceptions.ReservaExisteException;
 import uni.sd.ln.server.ssvoos.exceptions.ReservaInexistenteException;
+import uni.sd.ln.server.ssvoos.exceptions.SemReservaDisponivelException;
 import uni.sd.ln.server.ssvoos.exceptions.VooInexistenteException;
 import uni.sd.ln.server.ssvoos.reservas.Reserva;
 
@@ -37,7 +38,7 @@ public class ReservasDAO implements IReservasDAO {
      *                                e para o mesmo dia.
      */
     @Override
-    public int saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException {
+    public int saveReserva(Reserva r) throws SQLException, UtilizadorInexistenteException, VooInexistenteException, ReservaExisteException, SemReservaDisponivelException {
         Timestamp dataVoo = Timestamp.valueOf(r.getDataVoo());
         Timestamp dataReserva = Timestamp.valueOf(r.getDataReserva());
 
@@ -51,6 +52,17 @@ public class ReservasDAO implements IReservasDAO {
         );
         savePS.setTimestamp(3, dataReserva);
         savePS.setTimestamp(4, dataVoo);
+
+        PreparedStatement vooPS = conn.prepareStatement(
+                "select idVoo, Capacidade from Voo where Partida = ? and Destino = ?"
+        );
+        vooPS.setString(1, r.getPartida());
+        vooPS.setString(2, r.getDestino());
+
+        PreparedStatement reservasPS = conn.prepareStatement(
+                "select count(*) from Reserva where idVoo = ? and Data_Voo = ?"
+        );
+        reservasPS.setTimestamp(2, dataVoo);
         // Obtemos todos os locks
         userLock.lock();
         vooLock.lock();
@@ -59,9 +71,16 @@ public class ReservasDAO implements IReservasDAO {
         // o lock de utilizadores
         int idUtilizador = getUtilizadorID(r.getEmailUtilizador());
         userLock.unlock();
-        // Obtemos o id do voo e libertamos
+        // Obtemos o id e capacidades do voo e libertamos
         // o lock de voos
-        int idVoo = getVooID(r.getPartida(), r.getDestino());
+        ResultSet vooRS = vooPS.executeQuery();
+        if(!vooRS.next()) {
+            vooLock.unlock();
+            reservaLock.unlock();
+            throw new VooInexistenteException();
+        }
+        int idVoo = vooRS.getInt("idVoo");
+        int capacidade = vooRS.getInt("Capacidade");
         vooLock.unlock();
         // Adicionamos os à query
         ps.setInt(1, idUtilizador);
@@ -74,6 +93,16 @@ public class ReservasDAO implements IReservasDAO {
             reservaLock.unlock();
             throw new ReservaExisteException();
         }
+
+        reservasPS.setInt(1, idVoo);
+        ResultSet reservas = reservasPS.executeQuery();
+        reservas.next();
+        int ocupacao = reservas.getInt(1);
+        if(ocupacao == capacidade) {
+            reservaLock.unlock();
+            throw new SemReservaDisponivelException();
+        }
+
         // Adicionamos os ids ao insert
         savePS.setInt(1, idUtilizador);
         savePS.setInt(2, idVoo);
