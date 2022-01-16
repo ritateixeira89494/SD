@@ -6,7 +6,7 @@ public class Voo {
     private int capacidade;
     private int duracao;
 
-    public Voo(String partida, String destino, int capacidade, int ocupacao, int duracao) {
+    public Voo(String partida, String destino, int capacidade, int duracao) {
         this.partida = partida;
         this.destino = destino;
         this.capacidade = capacidade;

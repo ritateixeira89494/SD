@@ -43,12 +43,12 @@ public class VoosDAO implements IVoosDAO{
         ps.setString(2, v.getDestino());
 
         PreparedStatement savePS = conn.prepareStatement(
-                "insert into Voo(Partida, Destino, Capacidade, Ocupacao, Duracao) values (?,?,?,?,?)"
+                "insert into Voo(Partida, Destino, Capacidade, Duracao) values (?,?,?,?)"
         );
         savePS.setString(1, v.getPartida());
         savePS.setString(2, v.getDestino());
         savePS.setInt(3, v.getCapacidade());
-        savePS.setInt(5, v.getDuracao());
+        savePS.setInt(4, v.getDuracao());
 
         vooLock.lock();
         try {
@@ -97,7 +97,6 @@ public class VoosDAO implements IVoosDAO{
                 rs.getString("Partida"),
                 rs.getString("Destino"),
                 rs.getInt("Capacidade"),
-                rs.getInt("Ocupacao"),
                 rs.getInt("Duracao")
         );
     }
@@ -136,7 +135,6 @@ public class VoosDAO implements IVoosDAO{
             Voo v = new Voo(rs.getString("Partida"),
                     rs.getString("Destino"),
                     rs.getInt("Capacidade"),
-                    rs.getInt("Ocupacao"),
                     rs.getInt("Duracao")
             );
             voos.put(v.getDestino(), v);
@@ -180,7 +178,6 @@ public class VoosDAO implements IVoosDAO{
                     rs.getString("Partida"),
                     rs.getString("Destino"),
                     rs.getInt("Capacidade"),
-                    rs.getInt("Ocupacao"),
                     rs.getInt("Duracao")
             );
             voos.put(v.getPartida(), v);
@@ -208,7 +205,7 @@ public class VoosDAO implements IVoosDAO{
         ps.setString(2, v.getDestino());
 
         PreparedStatement updatePS = conn.prepareStatement(
-                "update Voo set Ocupacao = ? where Partida = ? and Destino = ?"
+                "update Voo set Capacidade = ? where Partida = ? and Destino = ?"
         );
         updatePS.setInt(1, v.getCapacidade());
         updatePS.setString(2, v.getPartida());
@@ -285,7 +282,6 @@ public class VoosDAO implements IVoosDAO{
                     rs.getString("Partida"),
                     rs.getString("Destino"),
                     rs.getInt("Capacidade"),
-                    rs.getInt("Ocupacao"),
                     rs.getInt("Duracao")
             );
             voos.add(v);

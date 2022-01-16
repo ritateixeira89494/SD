@@ -236,7 +236,17 @@ public class MenuPrincipal {
         String destino = scin.nextLine();
         try {
             System.out.println();
-            model.obterPercursosPossiveis(origem,destino);
+            List<List<String>> caminhos = model.obterPercursosPossiveis(origem,destino);
+            int i;
+            for(i = 0; i < caminhos.size(); i++) {
+                System.out.println("Caminho: " + (i+1));
+                List<String> caminho = caminhos.get(i);
+                int j;
+                for(j = 0; j < caminho.size() - 1; j++) {
+                    System.out.print(caminho.get(j) + "->");
+                }
+                System.out.println(caminho.get(j));
+            }
         } catch (DiaJaEncerradoException e) {
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }

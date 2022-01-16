@@ -190,13 +190,13 @@ public class LN implements ILN {
         List<String> dados = f.getDados();
         List<Voo> voos = new ArrayList<>();
         for(int i = 0; i < dados.size(); i+=5) {
-            voos.add(new Voo(dados.get(i), dados.get(i+1), Integer.parseInt(dados.get(i+2)), Integer.parseInt(dados.get(i+3)), Integer.parseInt(dados.get(i+4))));
+            voos.add(new Voo(dados.get(i), dados.get(i+1), Integer.parseInt(dados.get(i+2)), Integer.parseInt(dados.get(i+3))));
         }
         return voos;
     }
 
     @Override
-    public List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException, DiaJaEncerradoException {
+    public List<List<String>> obterPercursosPossiveis(String partida, String destino) throws IOException, DiaJaEncerradoException {
         List<String> dados = new ArrayList<>();
         dados.add(partida);
         dados.add(destino);
@@ -209,11 +209,12 @@ public class LN implements ILN {
 
         List<String> respDados = f.getDados();
 
-        List<Voo> voos = new ArrayList<>();
-        for(int i = 0; i < respDados.size(); i+=5) {
-            voos.add(new Voo(respDados.get(i), respDados.get(i+1), Integer.parseInt(respDados.get(i+2)), Integer.parseInt(dados.get(i+3)), Integer.parseInt(dados.get(i+4))));
+        List<List<String>> caminhos = new ArrayList<>();
+        for(String caminho: respDados) {
+            List<String> cidades = List.of(caminho.split(";"));
+            caminhos.add(cidades);
         }
 
-        return voos;
+        return caminhos;
     }
 }

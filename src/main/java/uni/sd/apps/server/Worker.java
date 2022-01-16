@@ -270,7 +270,17 @@ public class Worker implements Runnable {
         String tipoResp;
         List<String> respDados = new ArrayList<>();
         try {
-            List<List<String>> voos = ln.obterPercursosPossiveis(partida, destino);
+            List<List<String>> caminhos = ln.obterPercursosPossiveis(partida, destino);
+            for(List<String> caminho: caminhos) {
+                StringBuilder sb = new StringBuilder();
+                int i;
+                for(i = 0; i < caminho.size() - 1; i++) {
+                    sb.append(caminho.get(i));
+                    sb.append(";");
+                }
+                sb.append(caminho.get(i));
+                respDados.add(sb.toString());
+            }
             tipoResp = TipoMensagem.OK;
         } catch (DiaJaEncerradoException e) {
             tipoResp = DiaJaEncerradoException.Tipo;

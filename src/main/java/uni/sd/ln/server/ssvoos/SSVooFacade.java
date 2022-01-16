@@ -78,7 +78,7 @@ public class SSVooFacade implements ISSVoo {
             throw new DuracaoInvalidaException();
         }
 
-        Voo novoVoo = new Voo(partida, destino, capacidade, 0, duracao);
+        Voo novoVoo = new Voo(partida, destino, capacidade, duracao);
         daos.saveVoo(novoVoo);
     }
 

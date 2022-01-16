@@ -29,5 +29,5 @@ public interface ILN {
     // Normal
     List<Voo> obterListaVoo() throws IOException, DiaJaEncerradoException;
     // Normal
-    List<Voo> obterPercursosPossiveis(String partida, String destino) throws IOException, DiaJaEncerradoException;
+    List<List<String>> obterPercursosPossiveis(String partida, String destino) throws IOException, DiaJaEncerradoException;
 }
