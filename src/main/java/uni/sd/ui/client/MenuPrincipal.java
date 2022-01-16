@@ -218,8 +218,7 @@ public class MenuPrincipal {
                         "Partida: " + v.getPartida() + ";" + " " +
                                 "Destino: " + v.getDestino() + ";" + " " +
                                 "Capacidade: " + v.getCapacidade() + ";" + " " +
-                                "Ocupação: " + v.getOcupacao() + ";" + " " +
-                                "Duração: " + v.getOcupacao() + "."
+                                "Duração: " + v.getDuracao() + "."
                 );
             }
         } catch (DiaJaEncerradoException e) {

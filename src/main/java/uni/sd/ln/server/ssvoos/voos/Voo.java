@@ -1,19 +1,15 @@
 package uni.sd.ln.server.ssvoos.voos;
 
-import java.time.temporal.TemporalAmount;
-
 public class Voo {
     private final String partida;
     private final String destino;
     private int capacidade;
-    private int ocupacao;
     private int duracao;
 
     public Voo(String partida, String destino, int capacidade, int ocupacao, int duracao) {
         this.partida = partida;
         this.destino = destino;
         this.capacidade = capacidade;
-        this.ocupacao = ocupacao;
         this.duracao = duracao;
     }
 
@@ -21,7 +17,6 @@ public class Voo {
         this.partida = v.partida;
         this.destino = v.destino;
         this.capacidade = v.capacidade;
-        this.ocupacao = v.ocupacao;
         this.duracao = v.duracao;
     }
 
@@ -39,10 +34,6 @@ public class Voo {
 
     public void setCapacidade(int capacidade) {
         this.capacidade = capacidade;
-    }
-
-    public int getOcupacao(){
-        return this.ocupacao;
     }
 
     public int getDuracao() {

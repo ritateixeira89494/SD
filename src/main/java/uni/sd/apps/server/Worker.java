@@ -253,7 +253,6 @@ public class Worker implements Runnable {
                 respDados.add(v.getPartida());
                 respDados.add(v.getDestino());
                 respDados.add(v.getCapacidade() + "");
-                respDados.add(v.getOcupacao() + "");
                 respDados.add(v.getDuracao() + "");
             }
             tipoResp = TipoMensagem.OK;

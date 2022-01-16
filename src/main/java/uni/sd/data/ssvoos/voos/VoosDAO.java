@@ -48,7 +48,6 @@ public class VoosDAO implements IVoosDAO{
         savePS.setString(1, v.getPartida());
         savePS.setString(2, v.getDestino());
         savePS.setInt(3, v.getCapacidade());
-        savePS.setInt(4, v.getOcupacao());
         savePS.setInt(5, v.getDuracao());
 
         vooLock.lock();
