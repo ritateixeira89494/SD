@@ -3,7 +3,6 @@ package uni.sd.ln.server.ssvoos;
 import uni.sd.ln.server.ssutilizadores.exceptions.UtilizadorInexistenteException;
 import uni.sd.ln.server.ssvoos.exceptions.*;
 import uni.sd.ln.server.ssvoos.voos.Voo;
-
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;

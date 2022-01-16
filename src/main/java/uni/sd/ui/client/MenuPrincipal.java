@@ -51,6 +51,7 @@ public class MenuPrincipal {
             System.out.println();
             System.out.println("As credenciais encontram-se incorretas");
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
@@ -77,11 +78,10 @@ public class MenuPrincipal {
         int autoridade = Integer.parseInt(scin.nextLine());
         try {
             model.registar(email,username,password,autoridade);
+            System.out.println();
             if (autoridade == 1) {
-                System.out.println();
                 System.out.println("Administrador registado com sucesso");
             } else {
-                System.out.println();
                 System.out.println("Utilizador registado com sucesso");
             }
         } catch (UtilizadorExisteException e) {
@@ -94,6 +94,7 @@ public class MenuPrincipal {
             System.out.println();
             System.out.println("A password é inválida");
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
@@ -144,8 +145,10 @@ public class MenuPrincipal {
             System.out.println();
             System.out.println("A reserva não foi adicionada corretamente");
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         } catch (SemReservaDisponivelException e) {
+            System.out.println();
             System.out.println("Já não existem reservas disponíveis para este voo");
 
         }
@@ -169,6 +172,7 @@ public class MenuPrincipal {
             System.out.println();
             System.out.println("O utilizador não se encontra neste voo");
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
@@ -205,6 +209,7 @@ public class MenuPrincipal {
             System.out.println();
             System.out.println("Não é possível efetuar a reserva");
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }
@@ -222,12 +227,11 @@ public class MenuPrincipal {
                 );
             }
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
-
     }
 
-    // Issue
     private void obterPercursosPossiveis() throws IOException {
         System.out.println("Indique aqui a origem do voo : ");
         String origem = scin.nextLine();
@@ -248,6 +252,7 @@ public class MenuPrincipal {
                 System.out.println(caminho.get(j));
             }
         } catch (DiaJaEncerradoException e) {
+            System.out.println();
             System.out.println("O dia já foi encerrado. Tente novamente amanhã");
         }
     }

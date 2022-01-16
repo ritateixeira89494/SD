@@ -4,7 +4,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -15,7 +14,6 @@ public class TaggedConnection implements AutoCloseable {
     private final DataOutputStream dos;
     private final Lock wLock = new ReentrantLock();
     private final Lock rLock = new ReentrantLock();
-
 
     public TaggedConnection(Socket socket) throws IOException {
         dis = new DataInputStream(socket.getInputStream());
