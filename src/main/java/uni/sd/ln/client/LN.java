@@ -189,7 +189,7 @@ public class LN implements ILN {
         }
         List<String> dados = f.getDados();
         List<Voo> voos = new ArrayList<>();
-        for(int i = 0; i < dados.size(); i+=5) {
+        for(int i = 0; i < dados.size(); i+=4) {
             voos.add(new Voo(dados.get(i), dados.get(i+1), Integer.parseInt(dados.get(i+2)), Integer.parseInt(dados.get(i+3))));
         }
         return voos;
