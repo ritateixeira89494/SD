@@ -262,7 +262,6 @@ public class Worker implements Runnable {
     tc.send(tipoResp, respDados);
     }
 
-    // TODO: Acabar isto
     private void obterPercursosPossiveis(List<String> dados) throws VooInexistenteException, SQLException, IOException {
         String partida = dados.get(0);
         String destino = dados.get(1);
